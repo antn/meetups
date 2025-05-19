@@ -1,0 +1,8 @@
+<div class="container mt-3 mx-auto text-white rounded-2xl <%= scheme_color %> <%= classes %>">
+  <div class="p-5 flex justify-start items-center">
+    <% if icon %>
+      <%= heroicon(icon, variant: :mini, class: "mr-1", aria: { hidden: true }) %>
+    <% end %>
+    <%= content %>
+  </div>
+</div>

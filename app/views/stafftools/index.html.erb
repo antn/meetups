@@ -1,0 +1,20 @@
+<div class="m-3">
+  <div class="container max-w-4xl m-auto">
+    <h1 class="text-4xl font-bold mb-6">Stafftools</h1>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
+      <a href="<%= stafftools_meetup_areas_path %>" class="bg-gray-200 rounded-2xl p-6 flex items-center justify-center text-center hover:bg-gray-300">
+        <%= heroicon "map", class: "w-8 h-8 mr-2" %>
+        <span class="font-bold text-lg">Meetup Areas</span>
+      </a>
+      <a href="<%= stafftools_meetup_days_path %>" class="bg-gray-200 rounded-2xl p-6 flex items-center justify-center text-center hover:bg-gray-300">
+        <%= heroicon "calendar", class: "w-8 h-8 mr-2" %>
+        <span class="font-bold text-lg">Meetup Days</span>
+      </a>
+      <a href="<%= stafftools_meetups_path %>" class="bg-gray-200 rounded-2xl p-6 flex items-center justify-center text-center hover:bg-gray-300">
+        <%= heroicon "user-group", class: "w-8 h-8 mr-2" %>
+        <span class="font-bold text-lg">Meetups</span>
+      </a>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,57 @@
+<%= form_with model: meetup, url: meetup.persisted? ? meetup_path(meetup) : meetups_path, method: meetup.persisted? ? :patch : :post, local: true, class: "space-y-6" do |f| %>
+  <div>
+    <%= f.label :name, "Meetup name", class: "block font-semibold mb-1" %>
+    <%= f.text_field :name, maxlength: 50, class: "w-full border rounded px-3 py-2" %>
+    <% if meetup.errors[:name].any? %>
+      <div class="text-red-600 text-sm"><%= meetup.errors[:name].join(", ") %></div>
+    <% end %>
+  </div>
+
+  <div>
+    <%= f.label :description, "Description", class: "block font-semibold mb-1" %>
+    <%= f.text_area :description, rows: 3, maxlength: 280, class: "w-full border rounded px-3 py-2" %>
+    <% if meetup.errors[:description].any? %>
+      <div class="text-red-600 text-sm"><%= meetup.errors[:description].join(", ") %></div>
+    <% end %>
+  </div>
+
+  <div>
+    <%= f.label :slot_combo, "Day, time, and location", class: "block font-semibold mb-1" %>
+    <select name="meetup[slot_combo]" id="meetup_slot_combo" class="w-full border rounded px-3 py-2">
+      <option value="">Select a day, time, and location</option>
+      <% grouped_by_time = {} %>
+      <% days.each do |day| %>
+        <% areas.each do |area| %>
+          <% (slots_by_day_area[[day.id, area.id]] || []).each do |slot| %>
+            <% key = slot %>
+            <% grouped_by_time[key] ||= [] %>
+            <% grouped_by_time[key] << [day, area] %>
+          <% end %>
+        <% end %>
+      <% end %>
+      <% grouped_by_time.sort_by { |slot, _| slot }.each do |slot, day_area_pairs| %>
+        <optgroup label="<%= slot.in_time_zone("Pacific Time (US & Canada)").strftime("%A, %B %-d - %l%p").strip %>">
+          <% day_area_pairs.each do |day, area| %>
+            <% label = "#{day.date_in_local_time.strftime("%A, %B %-d")} - #{slot.in_time_zone("Pacific Time (US & Canada)").strftime("%l%p").strip} - #{area.name}" %>
+            <% value = "#{day.id}|#{area.id}|#{slot.iso8601}" %>
+            <option value="<%= value %>"
+              <% if (
+                meetup.meetup_day_id == day.id &&
+                meetup.meetup_area_id == area.id &&
+                meetup.starts_at&.iso8601 == slot.iso8601
+              ) %>selected<% end %>>
+              <%= label %>
+            </option>
+          <% end %>
+        </optgroup>
+      <% end %>
+    </select>
+    <% if meetup.errors[:starts_at].any? %>
+      <div class="text-red-600 text-sm"><%= meetup.errors[:starts_at].join(", ") %></div>
+    <% end %>
+  </div>
+
+  <div>
+    <%= f.submit meetup.persisted? ? "Update Meetup" : "Request meetup", class: "text-sm font-medium text-white py-2 px-5 bg-purple-600 hover:bg-purple-700 rounded-xl" %>
+  </div>
+<% end %>

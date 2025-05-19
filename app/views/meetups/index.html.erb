@@ -1,0 +1,109 @@
+<div class="my-4 mx-3">
+  <div class="container max-w-4xl m-auto">
+    <% if meetup_days.any? %>
+      <div class="mb-8">
+        <div class="border-b border-gray-200">
+          <nav class="flex" aria-label="Tabs">
+            <% meetup_days.each do |day| %>
+              <%
+                selected = meetup_day == day
+                link_classes = class_names(
+                  "flex-1 border-b-2 px-1 py-4 text-center text-sm font-medium",
+                  "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" => !selected,
+                  "border-pink-500 text-pink-600" => selected,
+                )
+              %>
+              <a href="?date=<%= day.date_in_local_time %>" class="<%= link_classes %>">
+                <%= day.starts_at.in_time_zone("Pacific Time (US & Canada)").strftime("%A, %B %-d") %>
+              </a>
+            <% end %>
+          </nav>
+        </div>
+      </div>
+
+      <div class="mb-8">
+        <% (meetup_day.starts_at.to_i..meetup_day.ends_at.to_i).step(1.hour).each do |hour| %>
+          <div class="flex items-center my-6">
+            <h3 class="text-lg font-semibold text-gray-700 whitespace-nowrap">
+              <%= Time.at(hour).in_time_zone("Pacific Time (US & Canada)").strftime("%l %p").strip %>
+            </h3>
+            <div class="flex-grow border-t border-gray-300 ml-2"></div>
+          </div>
+
+          <%
+            meetups_for_hour = meetup_day.non_rejected_meetups
+              .select do |meetup|
+                meetup.starts_at.in_time_zone("Pacific Time (US & Canada)").hour == Time.at(hour).in_time_zone("Pacific Time (US & Canada)").hour
+              end
+              .sort_by(&:meetup_area_id)
+          %>
+
+          <% if meetups_for_hour.any? %>
+            <% meetups_for_hour.each do |meetup| %>
+              <div class="<%= class_names(
+                "border rounded-lg p-4 mt-2",
+                "bg-neutral-50 border-neutral-300" => meetup.approved?,
+                "border-dashed border-yellow-500" => meetup.pending?,
+                "bg-yellow-50" => meetup.pending? && meetup.user == current_user,
+              ) %>">
+                <p class="text-sm font-medium text-gray-800">
+                  <div class="md:flex items-center justify-between">
+                    <div>
+                      <div class="<%= class_names(
+                        "text-sm",
+                        "text-gray-500" => meetup.approved?,
+                        "text-amber-600" => meetup.pending?,
+                      )%>">
+                        <strong><%= meetup.meetup_area.name %></strong> &bull; <%= meetup.starts_at.in_time_zone("Pacific Time (US & Canada)").strftime("%l %p").strip %>
+                        to
+                        <%= meetup.ends_at.in_time_zone("Pacific Time (US & Canada)").strftime("%l %p").strip %>
+                      </div>
+
+                      <% if meetup.approved? || meetup.adminable_by?(current_user) %>
+                        <div class="font-bold"><%= meetup.name %></div>
+                      <% else %>
+                        <div class="font-bold text-amber-700">Reserved</div>
+                      <% end %>
+                    </div>
+                    <% if meetup.adminable_by?(current_user) %>
+                      <div class="flex items-center justify-start md:justify-end">
+                        <div class="text-sm text-gray-600">
+                          <a href="<%= edit_meetup_path(meetup) %>" class="hover:underline"><%= heroicon("pencil-square", variant: :mini, class: "inline-block") %> Edit</a>
+                        </div>
+
+                        <% if current_user.site_admin? %>
+                          <div class="text-sm text-gray-600 ml-5">
+                            <a href="<%= stafftools_meetup_path(meetup) %>" class="hover:underline"><%= heroicon("rocket-launch", variant: :mini, class: "inline-block") %> View in Stafftools</a>
+                          </div>
+                        <% end %>
+                      </div>
+                    <% end %>
+                  </div>
+
+                  <% if meetup.approved? || meetup.adminable_by?(current_user) %>
+                    <p class="text-sm text-gray-500 mt-2"><%= meetup.description %></p>
+                  <% end %>
+
+                  <% if meetup.pending? %>
+                    <% pending_text = meetup.user == current_user ? "Your" : "This" %>
+                    <div class="text-xs text-amber-600 mt-2"><%= pending_text %> meetup is pending approval from a moderator.</div>
+                  <% end %>
+                </p>
+              </div>
+            <% end %>
+          <% else %>
+            <% unless hour == meetup_day.ends_at.to_i %>
+              <p class="text-sm text-gray-400 mt-2">No meetups scheduled yet.</p>
+            <% end %>
+          <% end %>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-center">
+        <p class="text-lg font-semibold text-gray-700">No meetups available yet.</p>
+        <p class="text-sm text-gray-500">Check back later for updates.</p>
+      </div>
+    <% end %>
+  </div>
+</div>
+

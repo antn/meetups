@@ -1,0 +1,37 @@
+<div class="m-3">
+  <div class="container max-w-4xl m-auto">
+    <div class="md:flex justify-between items-center">
+      <div>
+        <h1 class="text-xl font-bold text-gray-500"><a href="<%= stafftools_url %>">Stafftools</a></h1>
+        <h2 class="text-4xl font-bold mb-4">Create a meetup area</h2>
+      </div>
+
+      <a href="<%= stafftools_meetup_areas_path %>" class="bg-gray-200 text-sm rounded-2xl py-3 px-5 flex items-center justify-center text-center hover:bg-gray-300">
+        <%= heroicon("arrow-left", class: "mr-2", variant: :mini) %> Back to meetup areas
+      </a>
+    </div>
+
+    <div class="my-4">
+      <%= form_with model: meetup_area, url: stafftools_meetup_areas_path, method: :post do |form| %>
+        <div class="mb-4">
+          <%= form.label :name, "Name", class: "block text-gray-700 font-bold mb-2" %>
+          <%= form.text_field :name, class: "w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500" %>
+        </div>
+
+        <div class="mb-4">
+          <%= form.label :location, "Location", class: "block text-gray-700 font-bold mb-2" %>
+          <%= form.text_field :location, class: "w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500" %>
+        </div>
+
+        <div class="mb-4">
+          <%= form.label :description, "Description", class: "block text-gray-700 font-bold mb-2" %>
+          <%= form.text_area :description, rows: 4, class: "w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500" %>
+        </div>
+
+        <div class="flex justify-end">
+          <%= form.submit "Create meetup area", class: "bg-pink-500 text-white py-2 px-4 rounded-lg hover:bg-pink-600 transition duration-200" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "OffKai Expo Meetups" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
+  </head>
+
+  <body>
+    <div class="mb-28 md:mb-16">
+      <div class="w-full rounded-b-3xl pb-10 text-white bg-gradient-to-tl from-purple-700 via-pink-500 to-blue-500">
+        <div class="flex flex-col md:flex-row items-center justify-center p-6">
+          <a href="<%= root_path %>" class="flex flex-col md:flex-row items-center">
+            <img src="<%= image_url("offkai-logo.png") %>" alt="OffKai Expo Logo" width="128" class="mb-4 md:mb-0 md:mr-4">
+            <h1 class="text-xl md:text-3xl font-bold text-center md:text-left">OffKai Expo Fan Meetups</h1>
+          </a>
+        </div>
+      </div>
+
+      <div class="relative">
+        <div class="absolute top-[-40px] left-1/2 transform -translate-x-1/2 w-full max-w-4xl bg-white rounded-xl shadow-lg p-6">
+          <div class="flex flex-col md:flex-row items-center justify-between">
+            <div class="text-center md:text-left">
+              <% if current_user.present? %>
+                <p class="text-md font-semibold text-gray-800">Welcome, <%= current_user.login %>!</p>
+              <% else %>
+                <p class="text-md font-semibold text-gray-800">Welcome! Sign in to manage your meetups.</p>
+              <% end %>
+            </div>
+
+            <!-- Expandable Navigation Menu -->
+            <div class="sm:hidden w-full mt-4">
+              <input type="checkbox" id="nav-toggle" class="peer hidden">
+              <label for="nav-toggle" class="flex items-center justify-center text-sm font-medium text-purple-600 hover:underline cursor-pointer">
+                <%= heroicon("bars-4", class: "w-6 h-6 mr-2") %> Menu
+              </label>
+              <div class="peer-checked:flex hidden flex-col items-center mt-2 space-y-4">
+                <% if current_user.present? %>
+                  <a href="<%= new_meetup_path %>" class="block text-sm font-medium text-white py-2 px-5 bg-purple-600 hover:bg-purple-700 rounded-xl">Create a meetup</a>
+                <% end %>
+                <a href="/rules" class="block text-sm font-medium text-purple-600 hover:underline">Rules</a>
+                <a href="/map" class="block text-sm font-medium text-purple-600 hover:underline">Map</a>
+                <% if current_user.present? %>
+                  <% if current_user.site_admin? %>
+                    <a href="<%= stafftools_url %>" class="block text-sm font-medium text-pink-500 hover:underline">Stafftools</a>
+                  <% end %>
+                  <%= form_tag("/logout", method: "delete", data: { turbo: false }, class: "inline-flex items-center m-0 p-0") do %>
+                    <button type="submit" class="block text-sm font-medium text-purple-600 hover:underline cursor-pointer p-0 m-0 leading-none">Logout</button>
+                  <% end %>
+                <% else %>
+                  <%= form_tag("/auth/concat", method: "post", data: { turbo: false }) do %>
+                    <button type="submit" class="block text-sm font-medium text-white py-2 px-5 rounded-lg bg-purple-600 hover:bg-purple-700 cursor-pointer">Login with Concat</button>
+                  <% end %>
+                <% end %>
+              </div>
+            </div>
+
+            <!-- Regular Navigation for Larger Screens -->
+            <div class="hidden sm:flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 mt-4 md:mt-0">
+              <% if current_user.present? %>
+                <a href="<%= new_meetup_path %>" class="text-sm font-medium text-white py-2 px-5 bg-purple-600 hover:bg-purple-700 rounded-xl">Create a meetup</a>
+              <% end %>
+              <a href="/rules" class="text-sm font-medium text-purple-600 hover:underline">Rules</a>
+              <a href="/map" class="text-sm font-medium text-purple-600 hover:underline">Map</a>
+              <% if current_user.present? %>
+                <% if current_user.site_admin? %>
+                  <a href="<%= stafftools_url %>" class="text-sm font-medium text-pink-500 hover:underline">Stafftools</a>
+                <% end %>
+                <%= form_tag("/logout", method: "delete", data: { turbo: false }, class: "inline-flex items-center m-0 p-0") do %>
+                  <button type="submit" class="text-sm font-medium text-purple-600 hover:underline cursor-pointer p-0 m-0 leading-none">Logout</button>
+                <% end %>
+              <% else %>
+                <%= form_tag("/auth/concat", method: "post", data: { turbo: false }) do %>
+                  <button type="submit" class="text-sm font-medium text-white py-2 px-5 rounded-lg bg-purple-600 hover:bg-purple-700 cursor-pointer">Login with Concat</button>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <% if flash[:notice] %>
+      <%= render FlashComponent.new(scheme: :notice).with_content(flash[:notice]) %>
+    <% end %>
+    <% if flash[:success] %>
+      <%= render FlashComponent.new(scheme: :success).with_content(flash[:success]) %>
+    <% end %>
+    <% if flash[:warning] %>
+      <%= render FlashComponent.new(scheme: :warning).with_content(flash[:warning]) %>
+    <% end %>
+    <% if flash[:error] %>
+      <%= render FlashComponent.new(scheme: :error).with_content(flash[:error]) %>
+    <% end %>
+    <%= yield %>
+    <div class="mx-3 my-4">
+      <footer class="container max-w-4xl m-auto text-xs text-gray-400">
+        &copy; <%= Time.now.year %> <a href="https://offkaiexpo.com" class="hover:underline">OffKai Expo</a>
+      </footer>
+    </div>
+  </body>
+</html>
