@@ -1,0 +1,20 @@
+Hi <%= @user.login %>,
+
+Thanks for requesting a fan meetup at OffKai Expo!
+
+We've recieved your request for your meetup with the following details:
+
+Name: <%= @meetup.name %>
+Meetup area: <%= @meetup.meetup_area.name %>
+Date: <%= @meetup.formatted_start_date %>
+Time: <%= @meetup.formatted_duration %>
+
+A moderator will review your request and get back to you soon.
+
+In the meantime, you can login to your account to make any changes to your meetup details at https://meetups.offkaiexpo.com.
+
+If you have any questions, please feel free to reach out to us at contact@offkaiexpo.com.
+
+Thanks,
+
+The OffKai Expo Team

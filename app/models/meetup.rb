@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class Meetup < ApplicationRecord
+  OFFKAI_TIMEZONE = "Pacific Time (US & Canada)"
+
   belongs_to :user
   belongs_to :meetup_area, optional: true
   belongs_to :meetup_day, optional: true
@@ -14,13 +16,38 @@ class Meetup < ApplicationRecord
 
   enum :state, [:pending, :approved, :rejected]
 
+  after_create_commit :send_meetup_requested_notification
+  after_update_commit :send_state_change_notification
+
   def adminable_by?(actor)
     return false unless actor.present?
     return true if actor.site_admin?
     actor == user
   end
 
+  def formatted_start_date
+    starts_at.in_time_zone(OFFKAI_TIMEZONE).strftime("%A, %B %-d, %Y")
+  end
+
+  def formatted_duration
+    "#{starts_at.in_time_zone(OFFKAI_TIMEZONE).strftime("%-l %p")} - #{ends_at.in_time_zone(OFFKAI_TIMEZONE).strftime("%-l %p")}"
+  end
+
   private
+
+  def send_state_change_notification
+    if saved_change_to_state?
+      if state == "approved"
+        MeetupsMailer.meetup_approved(meetup: self).deliver_now
+      elsif state == "rejected"
+        MeetupsMailer.meetup_rejected(meetup: self).deliver_now
+      end
+    end
+  end
+
+  def send_meetup_requested_notification
+    MeetupsMailer.meetup_requested(meetup: self).deliver_now
+  end
 
   def no_duplicate_meetup_in_area
     return if meetup_area_id.nil? || starts_at.nil? || ends_at.nil?
