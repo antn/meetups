@@ -14,7 +14,7 @@ class Meetup < ApplicationRecord
   validate :validate_whole_hours
   validate :validate_ends_after_starts
 
-  enum :state, [:pending, :approved, :rejected]
+  enum :state, [:pending, :approved, :rejected, :cancelled]
 
   after_create_commit :send_meetup_requested_notification
   after_update_commit :send_state_change_notification

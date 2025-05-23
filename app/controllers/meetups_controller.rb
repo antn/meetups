@@ -2,7 +2,7 @@
 
 class MeetupsController < ApplicationController
   before_action :require_logged_in, except: [:index]
-  before_action :requires_adminable_by, only: [:edit, :update]
+  before_action :requires_adminable_by, only: [:edit, :update, :destroy]
 
   def index
     render "meetups/index", locals: {
@@ -165,6 +165,16 @@ class MeetupsController < ApplicationController
     end
   end
 
+  def destroy
+    if this_meetup.update(state: :cancelled)
+      flash[:notice] = "Cancelled #{this_meetup.name}!"
+    else
+      flash[:error] = "Couldn't cancel meetup: #{this_meetup.errors.full_messages}"
+    end
+
+    redirect_to root_url
+  end
+
   private
 
   def this_meetup
@@ -180,9 +190,9 @@ class MeetupsController < ApplicationController
       start_of_day = date.beginning_of_day.utc
       end_of_day = date.end_of_day.utc
 
-      MeetupDay.includes(:non_rejected_meetups).find_by(starts_at: start_of_day..end_of_day)
+      MeetupDay.includes(:listable_meetups).find_by(starts_at: start_of_day..end_of_day)
     else
-      MeetupDay.includes(:non_rejected_meetups).order(:starts_at).first
+      MeetupDay.includes(:listable_meetups).order(:starts_at).first
     end
 
     @meetup_day = day || MeetupDay.first

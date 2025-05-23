@@ -23,13 +23,13 @@ class Stafftools::MeetupsController < StafftoolsController
   end
 
   def destroy
-    if this_meetup.destroy
-      flash[:notice] = "Deleted #{this_meetup.name}!"
-      redirect_to stafftools_meetups_path
+    if this_meetup.update(state: :cancelled)
+      flash[:notice] = "Cancelled #{this_meetup.name}!"
     else
-      flash[:error] = "Couldn't delete meetup: #{this_meetup.errors.full_messages}"
-      redirect_to stafftools_meetup_path(this_meetup)
+      flash[:error] = "Couldn't cancel meetup: #{this_meetup.errors.full_messages}"
     end
+
+    redirect_to stafftools_meetup_path(this_meetup)
   end
 
   private
@@ -39,6 +39,8 @@ class Stafftools::MeetupsController < StafftoolsController
       :approved
     elsif params[:filter] == "rejected"
       :rejected
+    elsif params[:filter] == "cancelled"
+      :cancelled
     else
       :pending
     end

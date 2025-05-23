@@ -2,7 +2,7 @@
 
 class MeetupDay < ApplicationRecord
   has_many :meetups
-  has_many :non_rejected_meetups, -> { where.not(state: :rejected) }, class_name: "Meetup"
+  has_many :listable_meetups, -> { where.not(state: [:rejected, :cancelled]) }, class_name: "Meetup"
 
   validates :starts_at, :ends_at, presence: true
   validate :validate_same_day

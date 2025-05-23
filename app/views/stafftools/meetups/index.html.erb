@@ -7,14 +7,14 @@
       </div>
       <div>
         <div class="inline-flex rounded-md shadow-sm" role="group">
-          <% filters = { "Pending" => nil, "Approved" => "approved", "Rejected" => "rejected" } %>
+          <% filters = { "Pending" => nil, "Approved" => "approved", "Rejected" => "rejected", "Cancelled" => "cancelled" } %>
           <% filters.each do |label, value| %>
             <% active = (params[:filter].to_s == value.to_s || (value.nil? && params[:filter].blank?)) %>
             <a href="?<%= value.present? ? "filter=#{value}" : "" %>"
                class="px-4 py-2 text-sm font-medium border border-gray-300
                       <%= active ? 'bg-purple-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50' %>
                       <%= 'rounded-l-md' if label == 'Pending' %>
-                      <%= 'rounded-r-md' if label == 'Rejected' %>">
+                      <%= 'rounded-r-md' if label == 'Cancelled' %>">
               <%= label %>
             </a>
           <% end %>

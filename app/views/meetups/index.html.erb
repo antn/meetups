@@ -31,7 +31,7 @@
           </div>
 
           <%
-            meetups_for_hour = meetup_day.non_rejected_meetups
+            meetups_for_hour = meetup_day.listable_meetups
               .select do |meetup|
                 meetup.starts_at.in_time_zone("Pacific Time (US & Canada)").hour == Time.at(hour).in_time_zone("Pacific Time (US & Canada)").hour
               end

@@ -49,9 +49,26 @@
     <% if meetup.errors[:starts_at].any? %>
       <div class="text-red-600 text-sm"><%= meetup.errors[:starts_at].join(", ") %></div>
     <% end %>
+    <p class="mb-3 text-sm text-gray-600">Check out all of the meetup areas on our <a href="<%= map_path %>" class="text-purple-600 hover:underline">meetup areas map</a>.</p>
   </div>
 
   <div>
     <%= f.submit meetup.persisted? ? "Update Meetup" : "Request meetup", class: "text-sm font-medium text-white py-2 px-5 bg-purple-600 hover:bg-purple-700 rounded-xl" %>
+  </div>
+<% end %>
+
+<% if meetup.persisted? && (meetup.approved? || meetup.pending?) %>
+  <div class="my-5">
+    <h3 class="text-2xl font-bold text-red-600">Danger zone</h3>
+    <div class="flex justify-between items-center border border-gray-400 rounded-xl p-5 mt-3">
+
+    <div>
+      <span class="text-lg font-bold">Cancel your meetup</span>
+      <p class="text-sm text-gray-600">Plans changed? Cancel your meetup here and remove it from the schedule.</p>
+    </div>
+      <%= button_to "Cancel meetup", meetup_path(meetup), method: :delete,
+            form: { onsubmit: "return confirm('Are you sure you want to cancel this meetup? This cannot be undone!');" },
+            class: "bg-red-600 hover:bg-red-700 rounded-xl text-white text-sm font-medium py-2 px-5" %>
+    </div>
   </div>
 <% end %>
