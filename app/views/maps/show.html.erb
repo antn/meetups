@@ -1,0 +1,18 @@
+<div class="m-3">
+  <div class="container max-w-4xl m-auto">
+    <h1 class="text-4xl font-bold mb-3">Map</h1>
+
+    <a href="<%= asset_url("map.jpg") %>">
+      <img src="<%= asset_url("map.jpg") %>" alt="Meetup area map">
+    </a>
+
+    <h2 class="my-3 text-4xl font-bold">Meetup areas</h2>
+    <% meetup_areas.each do |area| %>
+      <div class="my-3 border p-5 rounded-lg">
+        <span class="text-2xl font-bold"><%= area.name %> &mdash;</span>
+        <span class="text-2xl text-gray-700"><%= area.location %></span>
+        <p class="text-gray-600"><%= area.description %></p>
+      </div>
+    <% end %>
+  </div>
+</div>

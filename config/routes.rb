@@ -13,7 +13,6 @@ Rails.application.routes.draw do
     resources :meetups
   end
 
-  resource :rules, only: [:show]
   resource :map, only: [:show]
 
   get "_ping", to: "rails/health#show", as: :rails_health_check
