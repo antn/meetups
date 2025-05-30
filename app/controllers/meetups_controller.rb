@@ -26,7 +26,7 @@ class MeetupsController < ApplicationController
             meetup_area_id: area.id,
             starts_at: start_time,
             ends_at: start_time + 1.hour
-          ).where.not(state: :rejected).exists?
+          ).where.not(state: [:cancelled, :rejected]).exists?
           slots << start_time unless slot_taken
           start_time += 1.hour
         end
@@ -151,7 +151,7 @@ class MeetupsController < ApplicationController
               meetup_area_id: area.id,
               starts_at: start_time,
               ends_at: start_time + 1.hour
-            ).where.not(state: :rejected)
+            ).where.not(state: [:cancelled, :rejected])
             # Allow the current meetup's slot
             slot_taken = slot_taken.where.not(id: this_meetup.id)
             slot_taken = slot_taken.exists?
