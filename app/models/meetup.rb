@@ -56,7 +56,7 @@ class Meetup < ApplicationRecord
       meetup_area_id: meetup_area_id,
       starts_at: starts_at,
       ends_at: ends_at
-    ).where.not(state: :rejected).exists?
+    ).where.not(state: [:cancelled, :rejected]).exists?
 
     if conflict
       errors.add(:starts_at, "A meetup already exists for this area and time slot.")
