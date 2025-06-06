@@ -14,6 +14,17 @@ class User < ApplicationRecord
     end
   end
 
+  def suspend!
+    update!(suspended_at: Time.now)
+    sessions.active.each do |session|
+      session.update!(expires_at: Time.now)
+    end
+  end
+
+  def suspended?
+    suspended_at.present?
+  end
+
   def housekeeping_url
     "https://reg.offkaiexpo.com/housekeeping/attendees/user/#{uid}"
   end

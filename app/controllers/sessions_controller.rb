@@ -6,7 +6,13 @@ class SessionsController < ApplicationController
   def create
     auth = request.env["omniauth.auth"]
     user = User.from_omniauth(auth)
-    login_user(user)
+
+    if user.suspended?
+      flash[:error] = "Sorry, we weren't able to log you in."
+    else
+      login_user(user)
+    end
+
     redirect_to root_path
   end
 
