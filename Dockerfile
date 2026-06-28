@@ -81,6 +81,10 @@ USER 1000:1000
 COPY --chown=rails:rails --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --chown=rails:rails --from=build /rails /rails
 
+# Expose git metadata from Railway's build args to the running app.
+ARG RAILWAY_GIT_BRANCH RAILWAY_GIT_COMMIT_SHA
+ENV GIT_BRANCH=$RAILWAY_GIT_BRANCH GIT_SHA=$RAILWAY_GIT_COMMIT_SHA
+
 # Entrypoint prepares the database.
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 
