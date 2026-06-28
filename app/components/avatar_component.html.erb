@@ -1,0 +1,7 @@
+<% if url.present? %>
+  <img src="<%= url %>" alt="<%= name %>" loading="lazy"
+       class="<%= size_class %> shrink-0 rounded-full object-cover ring-1 ring-black/5" />
+<% else %>
+  <span class="<%= size_class %> <%= color_class %> inline-flex shrink-0 items-center justify-center rounded-full font-semibold text-white"
+        aria-label="<%= name %>"><%= initials %></span>
+<% end %>

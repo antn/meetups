@@ -1,0 +1,23 @@
+# frozen_string_literal: true
+
+admin:
+  uid: 1001
+  login: admin
+  email: admin@example.com
+  site_admin: true
+  public_id: useradmin001
+
+member:
+  uid: 1002
+  login: member
+  email: member@example.com
+  site_admin: false
+  public_id: usermember01
+
+# A plain attendee who hosts nothing — used to exercise the RSVP toggle.
+guest:
+  uid: 1003
+  login: guest
+  email: guest@example.com
+  site_admin: false
+  public_id: userguest001

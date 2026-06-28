@@ -1,0 +1,47 @@
+<div class="group relative rounded-2xl p-4 <%= container_classes %>">
+  <% if clickable? %>
+    <%# Stretched link: covers the whole card; interactive children below are raised above it. %>
+    <%= link_to helpers.meetup_path(meetup.public_id), class: "absolute inset-0 z-0", aria: { label: "View #{meetup.title}" } do %><% end %>
+  <% end %>
+
+  <div class="flex items-center justify-between gap-2">
+    <span class="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-gray-500">
+      <%= heroicon "map-pin", variant: "mini", class: "h-3.5 w-3.5 text-gray-400" %>
+      <%= meetup.location.name %>
+    </span>
+    <div class="flex shrink-0 items-center gap-1.5">
+      <% if own? %>
+        <span class="rounded-full bg-brand-purple/10 px-2 py-0.5 text-[11px] font-semibold text-brand-purple">Your meetup</span>
+      <% end %>
+      <% if badge_label %>
+        <span class="rounded-full px-2 py-0.5 text-[11px] font-semibold <%= badge_classes %>"><%= badge_label %></span>
+      <% end %>
+    </div>
+  </div>
+
+  <% if hold? %>
+    <p class="mt-2 flex items-center gap-1.5 text-sm text-gray-400">
+      <%= heroicon "lock-closed", variant: "mini", class: "h-4 w-4" %>
+      Reserved — awaiting approval
+    </p>
+  <% else %>
+    <h4 class="mt-2 font-semibold leading-snug text-gray-900 <%= "group-hover:text-brand-purple" if clickable? %>"><%= meetup.title %></h4>
+    <p class="mt-1 flex items-center gap-1.5 text-xs text-gray-500">
+      <%= render AvatarComponent.new(name: meetup.user.login, url: meetup.user.profile_picture_url, size: :sm) %>
+      Hosted by <span class="font-medium text-gray-600"><%= meetup.user.login %></span>
+    </p>
+    <% if meetup.tags.any? %>
+      <div class="mt-2.5 flex flex-wrap gap-1">
+        <% meetup.tags.each do |tag| %>
+          <span class="rounded-full px-2 py-0.5 text-xs font-medium <%= helpers.tag_chip_classes(tag.color) %>"><%= tag.name %></span>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if status == :approved %>
+      <div class="relative z-10 mt-3 w-fit">
+        <%= render RsvpButtonComponent.new(meetup: meetup, viewer: viewer) %>
+      </div>
+    <% end %>
+  <% end %>
+</div>

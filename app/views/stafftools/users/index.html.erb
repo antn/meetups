@@ -1,0 +1,96 @@
+<% content_for :title, "Users · Stafftools" %>
+
+<div>
+  <h1 class="text-2xl font-bold tracking-tight text-gray-900">Users</h1>
+  <p class="mt-1 text-sm text-gray-500">Everyone who has signed in. Suspend an account to revoke its sessions and block future logins.</p>
+</div>
+
+<%= form_with url: stafftools_users_path, method: :get, class: "mt-6 flex max-w-md gap-2" do %>
+  <div class="relative flex-1">
+    <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+      <%= heroicon "magnifying-glass", variant: "mini", class: "h-4 w-4 text-gray-400" %>
+    </span>
+    <%= text_field_tag :q, @query,
+          placeholder: "Search by username or user ID",
+          autocomplete: "off",
+          class: "block w-full rounded-full border border-gray-300 py-2 pl-9 pr-3 text-sm shadow-sm focus:border-brand-purple focus:ring-brand-purple" %>
+  </div>
+  <%= submit_tag "Search", class: "cursor-pointer rounded-full bg-brand-purple px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-purple/90" %>
+  <% if @query.present? %>
+    <%= link_to "Clear", stafftools_users_path, class: "rounded-full px-3 py-2 text-sm font-medium text-gray-500 no-underline hover:text-gray-700" %>
+  <% end %>
+<% end %>
+
+<% if @users.any? %>
+  <div class="mt-6 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+    <table class="min-w-full divide-y divide-gray-100 text-sm">
+      <thead class="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">
+        <tr>
+          <th class="px-6 py-3">User</th>
+          <th class="px-6 py-3">User ID</th>
+          <th class="px-6 py-3">Status</th>
+          <th class="px-6 py-3 text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% @users.each do |user| %>
+          <tr>
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <%= render AvatarComponent.new(name: user.login, url: user.profile_picture_url, size: :md) %>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5 font-medium text-gray-900">
+                    <%= user.login %>
+                    <% if user.site_admin? %>
+                      <span class="inline-flex rounded-full bg-brand-purple/10 px-2 py-0.5 text-xs font-semibold text-brand-purple">Admin</span>
+                    <% end %>
+                  </div>
+                  <div class="truncate text-xs text-gray-500"><%= user.email %></div>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4 text-gray-600 tabular-nums"><%= user.uid %></td>
+            <td class="px-6 py-4">
+              <% if user.suspended? %>
+                <span class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-semibold text-red-700 ring-1 ring-red-200">
+                  <%= heroicon "no-symbol", variant: "mini", class: "h-3.5 w-3.5" %>
+                  Suspended
+                </span>
+              <% else %>
+                <span class="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-semibold text-green-700 ring-1 ring-green-200">
+                  <%= heroicon "check-circle", variant: "mini", class: "h-3.5 w-3.5" %>
+                  Active
+                </span>
+              <% end %>
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex items-center justify-end gap-3">
+                <%= link_to user.housekeeping_url, target: "_blank", rel: "noopener", class: "inline-flex items-center gap-1 font-medium text-brand-purple no-underline hover:underline" do %>
+                  Housekeeping
+                  <%= heroicon "arrow-top-right-on-square", variant: "mini", class: "h-3.5 w-3.5" %>
+                <% end %>
+                <% if user.site_admin? %>
+                  <span class="text-xs font-medium text-gray-400">Admin</span>
+                <% elsif user.suspended? %>
+                  <%= button_to "Unsuspend", unsuspend_stafftools_user_path(user, q: @query), method: :patch,
+                        class: "cursor-pointer font-medium text-green-600 hover:underline" %>
+                <% else %>
+                  <%= button_to "Suspend", suspend_stafftools_user_path(user, q: @query), method: :patch,
+                        form: { data: { turbo_confirm: "Suspend #{user.login}? This revokes their sessions and blocks future logins." } },
+                        class: "cursor-pointer font-medium text-red-600 hover:underline" %>
+                <% end %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <div class="mt-6 rounded-2xl border border-dashed border-gray-300 bg-white p-10 text-center">
+    <%= heroicon "users", class: "mx-auto h-10 w-10 text-gray-300" %>
+    <p class="mt-2 text-sm text-gray-500">
+      <%= @query.present? ? "No users match \"#{@query}\"." : "No users yet." %>
+    </p>
+  </div>
+<% end %>

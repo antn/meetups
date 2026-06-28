@@ -1,0 +1,21 @@
+<%# Tag filter chips for the schedule pages. Server-side: each chip links to the
+    current page (`path`) with the tag toggled in/out of the `tags[]` query.
+    Locals: tags (all event tags), selected (array of public_ids), path (helper symbol) %>
+<% if tags.any? %>
+  <div class="mb-6 flex flex-wrap items-center gap-2">
+    <span class="text-xs font-semibold uppercase tracking-wide text-gray-400">Filter</span>
+
+    <%# day: keeps the viewer's current day across the filter reload (the day-tabs
+        element refreshes these as days are switched client-side). %>
+    <%= link_to "All", send(path, tags: nil, day: params[:day]), data: { day_link: true },
+          class: "rounded-full px-3 py-1 text-xs font-medium no-underline transition #{selected.empty? ? "bg-brand-purple text-white" : "bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-gray-50"}" %>
+
+    <% tags.each do |tag| %>
+      <% active = selected.include?(tag.public_id) %>
+      <% toggled = active ? selected - [ tag.public_id ] : selected + [ tag.public_id ] %>
+      <% state = active ? "#{tag_chip_classes(tag.color)} ring-2 ring-gray-900" : "bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-gray-50" %>
+      <%= link_to tag.name, send(path, tags: toggled.presence, day: params[:day]), data: { day_link: true },
+            class: "rounded-full px-3 py-1 text-xs font-medium no-underline transition #{state}" %>
+    <% end %>
+  </div>
+<% end %>

@@ -1,0 +1,12 @@
+@import "tailwindcss";
+@source "../../components";
+@source "../../views";
+@source "../../helpers";
+
+@theme {
+  --color-brand-purple: #722283;
+  --color-brand-pink: #BB0080;
+  --color-brand-blue: #51ddf4;
+  --color-brand-yellow: #ffd04e;
+  --color-brand-orange: #e57b2c;
+}

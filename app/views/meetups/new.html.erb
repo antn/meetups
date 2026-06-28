@@ -1,0 +1,20 @@
+<% content_for :title, "Request a meetup · OffKai Expo" %>
+
+<%= link_to root_path, class: "inline-flex items-center gap-1 text-sm font-medium text-gray-500 no-underline transition hover:text-brand-purple" do %>
+  <%= heroicon "arrow-left", variant: "mini", class: "h-4 w-4" %>
+  Back to schedule
+<% end %>
+
+<h1 class="mt-4 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">Request a meetup</h1>
+<p class="mt-1 text-gray-500">Pick an open location and time. Your meetup goes live once an admin approves it.</p>
+
+<div class="mt-6">
+  <%= render "form",
+        meetup: @meetup,
+        event: @event,
+        url: meetups_path,
+        method: :post,
+        submit_label: "Request meetup",
+        selected_slot: @selected_slot,
+        cancel_path: root_path %>
+</div>

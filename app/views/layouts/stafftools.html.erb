@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Stafftools · Meetups" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Meetups">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
+  </head>
+
+  <body class="flex min-h-screen flex-col bg-gray-50 text-gray-900 antialiased">
+    <%= render StaffbarComponent.new(current_user: current_user) %>
+
+    <header class="border-b border-gray-200 bg-white">
+      <div class="mx-auto max-w-7xl px-6 sm:px-10">
+        <div class="flex items-center justify-between py-5">
+          <%= link_to stafftools_root_path, class: "flex items-center gap-2 no-underline" do %>
+            <%= heroicon "wrench-screwdriver", variant: "mini", class: "h-5 w-5 text-brand-purple" %>
+            <span class="text-lg font-semibold text-gray-900">Meetup Stafftools</span>
+          <% end %>
+          <div class="flex items-center gap-3 text-sm text-gray-500">
+            <%= link_to "Back to site", root_path, class: "font-medium text-gray-600 no-underline hover:text-brand-purple" %>
+          </div>
+        </div>
+
+        <% nav = [
+             ["Dashboard", stafftools_root_path, "dashboard"],
+             ["Meetups", stafftools_meetups_path, "meetups"],
+             ["Meetup days", stafftools_scheduling_days_path, "scheduling_days"],
+             ["Locations", stafftools_locations_path, "locations"],
+             ["Tags", stafftools_tags_path, "tags"],
+             ["Users", stafftools_users_path, "users"],
+             ["Events", stafftools_events_path, "events"]
+           ] %>
+        <nav class="-mb-px flex gap-6 overflow-x-auto">
+          <% nav.each do |label, path, controller| %>
+            <% active = params[:controller] == "stafftools/#{controller}" %>
+            <% state = active ? "border-brand-purple text-brand-purple" : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" %>
+            <%= link_to label, path, class: "whitespace-nowrap border-b-2 px-1 py-3 text-sm font-medium no-underline transition #{state}" %>
+          <% end %>
+        </nav>
+      </div>
+    </header>
+
+    <% if notice.present? || alert.present? %>
+      <div class="mx-auto mt-4 max-w-7xl px-6 sm:px-10">
+        <% if notice.present? %>
+          <div class="rounded-xl bg-green-50 px-4 py-3 text-sm text-green-800 ring-1 ring-green-200"><%= notice %></div>
+        <% end %>
+        <% if alert.present? %>
+          <div class="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-800 ring-1 ring-red-200"><%= alert %></div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <main class="mx-auto w-full max-w-7xl flex-1 px-6 py-10 sm:px-10">
+      <%= yield %>
+    </main>
+
+    <footer class="border-t border-gray-200 py-6">
+      <p class="text-center text-sm text-gray-400">&copy; 2026 OffKai Expo</p>
+    </footer>
+  </body>
+</html>

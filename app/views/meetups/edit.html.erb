@@ -1,0 +1,22 @@
+<% content_for :title, "Edit #{@meetup.title} · OffKai Expo" %>
+
+<%= link_to meetup_path(@meetup.public_id), class: "inline-flex items-center gap-1 text-sm font-medium text-gray-500 no-underline transition hover:text-brand-purple" do %>
+  <%= heroicon "arrow-left", variant: "mini", class: "h-4 w-4" %>
+  Back to meetup
+<% end %>
+
+<h1 class="mt-4 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">Edit meetup</h1>
+<% if @meetup.approved? %>
+  <p class="mt-1 text-gray-500">This meetup is already live — changes take effect right away.</p>
+<% end %>
+
+<div class="mt-6">
+  <%= render "form",
+        meetup: @meetup,
+        event: @event,
+        url: meetup_path(@meetup.public_id),
+        method: :patch,
+        submit_label: "Save changes",
+        selected_slot: @selected_slot,
+        cancel_path: meetup_path(@meetup.public_id) %>
+</div>

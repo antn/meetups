@@ -1,0 +1,29 @@
+<% if slots.empty? %>
+  <div class="rounded-2xl border border-dashed border-gray-200 px-6 py-12 text-center">
+    <%= heroicon "calendar", class: "mx-auto h-8 w-8 text-gray-300" %>
+    <p class="mt-2 text-sm text-gray-500">Nothing scheduled for this day.</p>
+  </div>
+<% else %>
+  <% if today %><time-marker class="relative block"><% end %>
+    <ol class="divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+      <% slots.each do |slot| %>
+        <%= render TimeSlotComponent.new(
+              scheduling_day: day,
+              start_time: slot[:start_time],
+              meetups: slot[:meetups],
+              active_location_count: active_location_count,
+              viewer: viewer,
+              show_open_slots: show_open_slots
+            ) %>
+      <% end %>
+    </ol>
+
+    <% if today %>
+      <%# Current-time marker (positioned client-side by the time-marker element). %>
+      <div data-target="time-marker.line" hidden class="pointer-events-none absolute inset-x-0 z-20 flex items-center gap-2 px-4 sm:px-6">
+        <span class="h-0.5 flex-1 rounded-full bg-blue-500/50"></span>
+        <span data-target="time-marker.label" class="rounded bg-blue-500/80 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-white shadow-sm"></span>
+      </div>
+    </time-marker>
+    <% end %>
+<% end %>

@@ -1,0 +1,25 @@
+# frozen_string_literal: true
+
+# Pending submission in the Friday 10:00 AM PDT slot (17:00 UTC), awaiting review.
+pending_vtuber:
+  event: expo
+  user: member
+  location: main_stage
+  scheduling_day: friday
+  title: VTuber Fan Meetup
+  description: Come hang out with fellow VTuber fans.
+  starts_at: 2026-09-12 17:00:00
+  status: 0
+  public_id: meetuppend01
+
+# Approved, public meetup in the Friday 11:00 AM PDT slot (18:00 UTC).
+approved_cosplay:
+  event: expo
+  user: member
+  location: main_stage
+  scheduling_day: friday
+  title: Cosplay Contest
+  description: Show off your best cosplay.
+  starts_at: 2026-09-12 18:00:00
+  status: 1
+  public_id: meetupappr01

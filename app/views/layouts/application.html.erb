@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Meetups" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Meetups">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
+    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%# Includes all stylesheet files in app/assets/stylesheets %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
+  </head>
+
+  <body class="flex min-h-screen flex-col bg-white text-gray-900 antialiased">
+    <%= render StaffbarComponent.new(current_user: current_user) %>
+    <%= render HeaderComponent.new(current_user: current_user) %>
+
+    <% if notice.present? || alert.present? %>
+      <div class="mx-auto mt-4 max-w-7xl px-6 sm:px-10">
+        <% if notice.present? %>
+          <div class="rounded-xl bg-green-50 px-4 py-3 text-sm text-green-800 ring-1 ring-green-200"><%= notice %></div>
+        <% end %>
+        <% if alert.present? %>
+          <div class="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-800 ring-1 ring-red-200"><%= alert %></div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <main class="mx-auto w-full max-w-7xl flex-1 px-6 py-10 sm:px-10">
+      <%= yield %>
+    </main>
+
+    <footer class="border-t border-gray-100 py-6">
+      <p class="text-center text-sm text-gray-400">&copy; 2026 OffKai Expo</p>
+    </footer>
+
+    <%= render SignInDialogComponent.new(current_user: current_user) %>
+  </body>
+</html>

@@ -1,0 +1,14 @@
+# frozen_string_literal: true
+
+main_stage:
+  event: expo
+  name: Main Stage
+  description: The big room.
+  active: true
+  public_id: locmainstage
+
+storage:
+  event: expo
+  name: Storage Closet
+  active: false
+  public_id: locstorage01

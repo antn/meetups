@@ -1,0 +1,93 @@
+<% content_for :title, "#{@meetup.title} · Stafftools" %>
+
+<%= link_to stafftools_meetups_path, class: "inline-flex items-center gap-1 text-sm font-medium text-gray-500 no-underline transition hover:text-brand-purple" do %>
+  <%= heroicon "arrow-left", variant: "mini", class: "h-4 w-4" %>
+  Pending meetups
+<% end %>
+
+<article class="mt-4 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+  <div class="border-b border-gray-100 px-6 py-6">
+    <% if @meetup.editable_by?(current_user) %>
+      <%= link_to edit_stafftools_meetup_path(@meetup), class: "float-right inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700 no-underline transition hover:bg-gray-200" do %>
+        <%= heroicon "pencil-square", variant: "mini", class: "h-3.5 w-3.5" %>
+        Edit
+      <% end %>
+    <% end %>
+    <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 <%= meetup_status_badge_classes(@meetup.status) %>">
+      <%= @meetup.status.titleize %>
+    </span>
+    <h1 class="mt-2 text-2xl font-bold tracking-tight text-gray-900"><%= @meetup.title %></h1>
+    <p class="mt-1 flex flex-wrap items-center gap-2 text-gray-500">
+      <span>Hosted by</span>
+      <%= link_to @meetup.user.housekeeping_url, target: "_blank", rel: "noopener", class: "inline-flex items-center gap-1 font-semibold text-brand-purple no-underline hover:underline" do %>
+        <%= @meetup.user.login %>
+        <%= heroicon "arrow-top-right-on-square", variant: "mini", class: "h-3.5 w-3.5" %>
+      <% end %>
+      <% if @meetup.user.suspended? %>
+        <span class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-semibold text-red-700 ring-1 ring-red-200">
+          <%= heroicon "no-symbol", variant: "mini", class: "h-3.5 w-3.5" %>
+          Suspended
+        </span>
+        <%= button_to "Unsuspend", unsuspend_stafftools_user_path(@meetup.user), method: :patch,
+              class: "cursor-pointer text-xs font-semibold text-green-600 hover:underline" %>
+      <% elsif !@meetup.user.site_admin? %>
+        <%= button_to suspend_stafftools_user_path(@meetup.user), method: :patch,
+              form: { data: { turbo_confirm: "Suspend #{@meetup.user.login}? This revokes their sessions and blocks future logins." } },
+              class: "inline-flex items-center gap-1 cursor-pointer rounded-full border border-red-200 bg-white px-2.5 py-0.5 text-xs font-semibold text-red-600 transition hover:bg-red-50" do %>
+          <%= heroicon "no-symbol", variant: "mini", class: "h-3.5 w-3.5" %>
+          Suspend host
+        <% end %>
+      <% end %>
+    </p>
+  </div>
+
+  <div class="space-y-6 px-6 py-6">
+    <dl class="grid gap-4 sm:grid-cols-3">
+      <div>
+        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">Location</dt>
+        <dd class="mt-1 font-medium text-gray-900"><%= @meetup.location.name %></dd>
+      </div>
+      <div>
+        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">Day</dt>
+        <dd class="mt-1 font-medium text-gray-900"><%= @meetup.scheduling_day.date.strftime("%A, %b %-d") %></dd>
+      </div>
+      <div>
+        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">Time</dt>
+        <dd class="mt-1 font-medium text-gray-900">
+          <%= @meetup.starts_at.in_time_zone(current_event.tz).strftime("%-l:%M %p") %>
+          &ndash;
+          <%= @meetup.ends_at.in_time_zone(current_event.tz).strftime("%-l:%M %p") %>
+        </dd>
+      </div>
+    </dl>
+
+    <% if @meetup.tags.any? %>
+      <div class="flex flex-wrap gap-1.5">
+        <% @meetup.tags.each do |tag| %>
+          <span class="rounded-full px-2.5 py-0.5 text-xs font-medium <%= tag_chip_classes(tag.color) %>"><%= tag.name %></span>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if @meetup.description.present? %>
+      <div>
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-400">About</h2>
+        <p class="mt-2 leading-relaxed text-gray-700"><%= @meetup.description %></p>
+      </div>
+    <% end %>
+
+    <% if @meetup.pending? %>
+      <div class="flex flex-col gap-3 border-t border-gray-100 pt-6 sm:flex-row sm:items-start">
+        <%= button_to "Approve", approve_stafftools_meetup_path(@meetup), method: :patch,
+              class: "cursor-pointer rounded-full bg-green-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-green-700" %>
+
+        <%= form_with url: reject_stafftools_meetup_path(@meetup), method: :patch, class: "flex flex-1 items-center gap-2" do %>
+          <%= text_field_tag :rejection_reason, nil,
+                placeholder: "Reason for rejection",
+                class: "block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-red-400 focus:ring-red-400" %>
+          <%= submit_tag "Reject", class: "shrink-0 cursor-pointer rounded-full border border-red-200 bg-white px-5 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50" %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</article>

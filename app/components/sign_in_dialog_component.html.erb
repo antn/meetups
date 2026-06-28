@@ -1,0 +1,29 @@
+<sign-in-dialog>
+  <dialog data-target="sign-in-dialog.dialog"
+          data-action="click:sign-in-dialog#backdrop"
+          class="m-auto w-full max-w-sm rounded-2xl p-0 shadow-xl backdrop:bg-gray-900/50 backdrop:backdrop-blur-sm">
+    <div class="p-6 text-center sm:p-8">
+      <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-brand-purple/10">
+        <%= heroicon "lock-closed", class: "h-6 w-6 text-brand-purple" %>
+      </div>
+      <h2 class="mt-4 text-lg font-bold text-gray-900">Sign in to continue</h2>
+      <p class="mt-1 text-sm text-gray-500">
+        Log in with your OffKai Expo account to claim a slot and RSVP to meetups.
+      </p>
+
+      <div class="mt-6 space-y-2">
+        <%# Turbo is disabled so the cross-origin OAuth redirect is a normal browser
+            navigation (a fetch submission would trip CORS on the provider redirect). %>
+        <%= button_to "Log in with OffKai Expo", "/auth/concat",
+              method: :post,
+              form: { data: { turbo: false } },
+              class: "block w-full cursor-pointer rounded-full bg-brand-purple px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-purple/90" %>
+        <button type="button"
+                data-action="click:sign-in-dialog#close"
+                class="block w-full cursor-pointer rounded-full px-5 py-2.5 text-sm font-medium text-gray-500 transition hover:text-gray-700">
+          Maybe later
+        </button>
+      </div>
+    </div>
+  </dialog>
+</sign-in-dialog>

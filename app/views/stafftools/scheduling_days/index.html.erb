@@ -1,0 +1,48 @@
+<% content_for :title, "Meetup days · Stafftools" %>
+
+<div class="flex items-center justify-between">
+  <div>
+    <h1 class="text-2xl font-bold tracking-tight text-gray-900">Meetup days</h1>
+    <p class="mt-1 text-sm text-gray-500">The days and hours during which meetups can be scheduled.</p>
+  </div>
+  <%= link_to new_stafftools_scheduling_day_path, class: "inline-flex items-center gap-1.5 rounded-full bg-brand-purple px-4 py-2 text-sm font-semibold text-white no-underline shadow-sm transition hover:bg-brand-purple/90" do %>
+    <%= heroicon "plus", variant: "mini", class: "h-4 w-4" %>
+    Add day
+  <% end %>
+</div>
+
+<% if @scheduling_days.any? %>
+  <div class="mt-6 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+    <table class="min-w-full divide-y divide-gray-100 text-sm">
+      <thead class="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">
+        <tr>
+          <th class="px-6 py-3">Date</th>
+          <th class="px-6 py-3">Hours</th>
+          <th class="px-6 py-3">Slots / location</th>
+          <th class="px-6 py-3 text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% @scheduling_days.each do |day| %>
+          <tr>
+            <td class="px-6 py-4 font-medium text-gray-900"><%= day.date.strftime("%A, %B %-d, %Y") %></td>
+            <td class="px-6 py-4 text-gray-600"><%= day.start_time.strftime("%-l:%M %p") %> &ndash; <%= day.end_time.strftime("%-l:%M %p") %></td>
+            <td class="px-6 py-4 text-gray-600"><%= day.slot_count %></td>
+            <td class="px-6 py-4">
+              <div class="flex items-center justify-end gap-3">
+                <%= link_to "Edit", edit_stafftools_scheduling_day_path(day), class: "font-medium text-brand-purple no-underline hover:underline" %>
+                <%= button_to "Remove", stafftools_scheduling_day_path(day), method: :delete,
+                      form: { data: { turbo_confirm: "Remove this meetup day?" } },
+                      class: "cursor-pointer font-medium text-red-600 hover:underline" %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <div class="mt-6 rounded-2xl border border-dashed border-gray-300 bg-white p-10 text-center">
+    <p class="text-sm text-gray-500">No meetup days yet. Add one to open up scheduling.</p>
+  </div>
+<% end %>

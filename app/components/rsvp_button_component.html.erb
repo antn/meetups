@@ -1,0 +1,30 @@
+<div id="<%= dom_id %>" class="inline-flex">
+  <% if host? %>
+    <%# You're hosting — no RSVP, just a tally of who's coming. %>
+    <span class="inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1 text-xs font-semibold text-gray-600">
+      <%= heroicon "users", variant: "mini", class: "h-4 w-4 text-gray-400" %>
+      <%= attendee_summary %>
+    </span>
+  <% elsif signed_in? && going? %>
+    <%= button_to helpers.meetup_attendance_path(meetup.public_id), method: :delete, class: button_class do %>
+      <%= heroicon "check", variant: "mini", class: "h-4 w-4" %>
+      Going
+      <span class="<%= count_class %>"><%= count %></span>
+    <% end %>
+  <% elsif signed_in? %>
+    <%= button_to helpers.meetup_attendance_path(meetup.public_id), method: :post, class: button_class do %>
+      <%= heroicon "plus", variant: "mini", class: "h-4 w-4" %>
+      I'm going!
+      <span class="<%= count_class %>"><%= count %></span>
+    <% end %>
+  <% else %>
+    <%# Signed-out: show the count and open the sign-in modal on click. %>
+    <sign-in-trigger class="contents">
+      <button type="button" class="<%= BTN_BASE %> <%= BTN_IDLE %>">
+        <%= heroicon "plus", variant: "mini", class: "h-4 w-4" %>
+        Log in to RSVP
+        <span class="<%= count_class %>"><%= count %></span>
+      </button>
+    </sign-in-trigger>
+  <% end %>
+</div>

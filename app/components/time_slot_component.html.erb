@@ -1,0 +1,19 @@
+<li data-targets="time-marker.rows"
+    data-hour="<%= hour_24 %>"
+    class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:gap-5 sm:px-6">
+  <div class="w-20 shrink-0 pt-1 text-sm font-semibold text-gray-900"><%= time_label %></div>
+
+  <div class="flex-1 space-y-3">
+    <% if meetups.any? %>
+      <div class="grid gap-3 sm:grid-cols-2">
+        <% meetups.each do |meetup| %>
+          <%= render MeetupCardComponent.new(meetup: meetup, viewer: viewer) %>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if show_open_slots && !past? && open_slots.positive? %>
+      <%= render OpenSlotComponent.new(count: open_slots, slot_param: slot_param, signed_in: viewer.present?) %>
+    <% end %>
+  </div>
+</li>

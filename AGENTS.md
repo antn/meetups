@@ -1,0 +1,9 @@
+- All Ruby files should have `frozen_string_literal: true` at the top of each file
+- All models created should have a `public_id` field: `t.string :public_id, limit: 12, index: { unique: true }, null: false`
+- All views should use components where possible (rails view components)
+- All JS should be GitHub Catalyst components and follow the guides for usage: https://github.github.io/catalyst/guide/introduction/
+- Catalyst components should always use targets, actions, attrs, etc. Avoid usage of uerySelector etc in favor of targets.
+- Every page in the app should use Tailwind for styling. For things like buttons, links, containers, etc, we should use view components that have tailwind styling and can be reused across the app.
+- NEVER use custom CSS. Always use only Tailwind classes.
+- Do not add unneeded comments. Comments should only be added if code is complex.
+- Any page headers/buttons/etc should use sentence case, not title case.

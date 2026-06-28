@@ -1,0 +1,33 @@
+<div class="px-3 py-2 text-xs <%= background_color %>">
+  <div class="flex items-center justify-between mx-3">
+    <div class="flex items-center justify-start">
+      <div class="flex items-center mr-3">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16" class="opacity-75 mr-2">
+          <path d="M9.5 3.25a2.25 2.25 0 1 1 3 2.122V6A2.5 2.5 0 0 1 10 8.5H6a1 1 0 0 0-1 1v1.128a2.251 2.251 0 1 1-1.5 0V5.372a2.25 2.25 0 1 1 1.5 0v1.836A2.493 2.493 0 0 1 6 7h4a1 1 0 0 0 1-1v-.628A2.25 2.25 0 0 1 9.5 3.25Zm-6 0a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0Zm8.25-.75a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5ZM4.25 12a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Z" fill="#fff"></path>
+        </svg>
+        <% if branch_name.present? %>
+          <span class="group bg-black py-1 px-2 font-mono text-white opacity-75 rounded">
+            <span class="text-white">
+              <%= branch_name %>
+            </span>
+            <% if short_sha.present? %>
+              <span class="text-white hidden group-hover:inline">
+                <%= short_sha %>
+              </span>
+            <% end %>
+          </span>
+        <% end %>
+      </div>
+      <div class="flex items-center mr-3">
+        <span class="text-white opacity-75 mr-1">Rails <%= Rails.version %></span>
+        <span class="text-white opacity-75">&ndash; Ruby <%= RUBY_VERSION %></span>
+      </div>
+    </div>
+    <div class="flex items-center justify-end">
+      <%= link_to helpers.stafftools_root_path, class: "flex items-center gap-1 rounded bg-black/40 py-1 px-2 font-semibold text-white no-underline opacity-75 transition hover:opacity-100" do %>
+        <%= heroicon "rocket-launch", variant: "mini", class: "h-3.5 w-3.5" %>
+        Stafftools
+      <% end %>
+    </div>
+  </div>
+</div>

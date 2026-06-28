@@ -1,0 +1,152 @@
+# frozen_string_literal: true
+
+class Meetup < ApplicationRecord
+  # Fixed meetup length. A meetup runs starts_at .. starts_at + DURATION.
+  DURATION = 1.hour
+
+  belongs_to :event
+  belongs_to :user
+  belongs_to :location
+  belongs_to :scheduling_day
+  belongs_to :reviewed_by, class_name: "User", optional: true
+
+  has_many :meetup_tags, dependent: :destroy
+  has_many :tags, through: :meetup_tags
+  has_many :attendances, dependent: :destroy
+  has_many :attendees, through: :attendances, source: :user
+
+  # NOTE: these integer values are relied on by the partial unique index
+  # `index_meetups_unique_active_slot` (where "status NOT IN (2, 3)"). Do not reorder.
+  enum :status, { pending: 0, approved: 1, rejected: 2, cancelled: 3 }, default: :pending
+
+  # Statuses that release the slot and hide the meetup from listings: a rejected
+  # meetup (by an admin) or a cancelled one (by the submitter).
+  INACTIVE_STATUSES = %i[rejected cancelled].freeze
+
+  validates :title, presence: true
+  validates :description, presence: true, length: { minimum: 15, maximum: 280 }
+  validates :starts_at, presence: true
+  validates :rejection_reason, presence: true, if: :rejected?
+  validate :starts_at_in_day_window
+  validate :starts_at_not_in_past, on: :create
+  validate :associations_share_event
+  validate :location_is_active, on: :create
+  validate :requires_a_tag
+  validate :slot_available
+
+  # Rejected/cancelled meetups are never shown in listings; they also free the slot.
+  scope :visible, -> { where.not(status: INACTIVE_STATUSES) }
+  scope :occupying, -> { where.not(status: INACTIVE_STATUSES) }
+  scope :for_day, ->(day) { where(scheduling_day: day) }
+
+  # Meetups carrying any of the given tag public_ids (OR). A subquery keeps it
+  # free of joins/duplicates so it composes cleanly with includes/.or.
+  scope :tagged_with, ->(tag_public_ids) {
+    where(id: MeetupTag.joins(:tag).where(tags: { public_id: tag_public_ids }).select(:meetup_id))
+  }
+
+  # Meetups a given viewer is allowed to see in a listing: approved ones are
+  # public; a viewer also sees their own pending submissions; admins see all
+  # non-rejected meetups.
+  scope :listable_for, ->(viewer) {
+    if viewer&.site_admin?
+      visible
+    elsif viewer
+      where(status: :approved).or(where(status: :pending, user_id: viewer.id))
+    else
+      where(status: :approved)
+    end
+  }
+
+  def ends_at
+    return if starts_at.blank?
+
+    starts_at + DURATION
+  end
+
+  # Whether a viewer may see this meetup's details (beyond its location/timeslot
+  # hold). Approved meetups are public; pending meetups are visible only to the
+  # submitter and admins; rejected meetups are visible to no one.
+  def visible_to?(viewer)
+    return true if approved?
+    return false if rejected? || cancelled?
+
+    # pending
+    viewer.present? && (viewer.id == user_id || viewer.site_admin?)
+  end
+
+  # Who may edit this submission: its submitter or any admin, while it's still
+  # live (pending or approved). Rejected/cancelled meetups are read-only.
+  def editable_by?(user)
+    return false if user.nil?
+    return false unless pending? || approved?
+
+    user.site_admin? || user.id == user_id
+  end
+
+  def approve!(by:)
+    transaction do
+      update!(status: :approved, reviewed_by: by, reviewed_at: Time.current, rejection_reason: nil)
+    end
+  end
+
+  def reject!(by:, reason:)
+    transaction do
+      update!(status: :rejected, reviewed_by: by, reviewed_at: Time.current, rejection_reason: reason)
+    end
+  end
+
+  # Cancellation is performed by the submitter (not an admin review), so it does
+  # not touch the reviewed_by/reviewed_at metadata. Frees the slot.
+  def cancel!
+    update!(status: :cancelled)
+  end
+
+  private
+
+  def starts_at_in_day_window
+    return if starts_at.blank? || scheduling_day.blank?
+
+    unless scheduling_day.valid_start_times.any? { |time| time == starts_at }
+      errors.add(:starts_at, "must be an available hour within the scheduling day")
+    end
+  end
+
+  # You can't claim a timeslot that has already started/passed.
+  def starts_at_not_in_past
+    return if starts_at.blank?
+
+    errors.add(:starts_at, "has already passed") if starts_at.past?
+  end
+
+  def associations_share_event
+    [ location, scheduling_day ].each do |record|
+      next if record.blank? || event_id.blank?
+
+      if record.event_id != event_id
+        errors.add(:base, "#{record.class.name.downcase} must belong to the same event")
+      end
+    end
+  end
+
+  def location_is_active
+    return if location.blank?
+
+    errors.add(:location, "is not available for booking") unless location.active?
+  end
+
+  def requires_a_tag
+    if meetup_tags.reject(&:marked_for_destruction?).empty?
+      errors.add(:tags, "must include at least one tag")
+    end
+  end
+
+  def slot_available
+    return if location_id.blank? || starts_at.blank?
+
+    conflict = Meetup.where(location_id: location_id, starts_at: starts_at).where.not(status: INACTIVE_STATUSES)
+    conflict = conflict.where.not(id: id) if persisted?
+
+    errors.add(:base, "That location is already booked for this time") if conflict.exists?
+  end
+end

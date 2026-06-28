@@ -1,0 +1,20 @@
+<% content_for :title, "Edit #{@meetup.title} · Stafftools" %>
+
+<%= link_to stafftools_meetup_path(@meetup), class: "inline-flex items-center gap-1 text-sm font-medium text-gray-500 no-underline transition hover:text-brand-purple" do %>
+  <%= heroicon "arrow-left", variant: "mini", class: "h-4 w-4" %>
+  Back to meetup
+<% end %>
+
+<h1 class="mt-4 text-2xl font-bold tracking-tight text-gray-900">Edit meetup</h1>
+<p class="mt-1 text-sm text-gray-500">Editing <span class="font-medium text-gray-700"><%= @meetup.user.login %></span>'s submission.</p>
+
+<div class="mt-6">
+  <%= render "meetups/form",
+        meetup: @meetup,
+        event: current_event,
+        url: stafftools_meetup_path(@meetup),
+        method: :patch,
+        submit_label: "Save changes",
+        selected_slot: @selected_slot,
+        cancel_path: stafftools_meetup_path(@meetup) %>
+</div>

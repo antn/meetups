@@ -1,0 +1,13 @@
+# frozen_string_literal: true
+
+cosplay:
+  event: expo
+  name: Cosplay
+  color: pink
+  public_id: tagcosplay01
+
+gaming:
+  event: expo
+  name: Gaming
+  color: blue
+  public_id: taggaming001

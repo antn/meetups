@@ -1,0 +1,43 @@
+<div class="relative mb-12">
+  <header class="w-full overflow-hidden rounded-b-4xl bg-gradient-to-r from-brand-purple to-brand-pink shadow-lg">
+    <div class="relative mx-auto flex min-h-56 max-w-7xl flex-col px-6 sm:px-10">
+      <%= image_tag "samjoe-2026.webp",
+            alt: "",
+            aria: { hidden: "true" },
+            loading: "eager",
+            class: "pointer-events-none absolute bottom-0 right-4 top-1 z-0 w-2/3 max-w-lg select-none object-cover object-top drop-shadow-xl sm:right-8 sm:w-1/2" %>
+
+      <div class="relative z-10 flex items-center py-6">
+        <%= link_to root_path, class: "flex items-center gap-3 no-underline" do %>
+          <%= image_tag "logo-2026.webp", alt: "OffKai Expo", class: "h-16 w-auto sm:h-20" %>
+          <span class="text-2xl font-light text-white/50 sm:text-3xl">|</span>
+          <span class="text-xl font-semibold text-white/90 sm:text-2xl">Meetups</span>
+        <% end %>
+      </div>
+    </div>
+  </header>
+
+  <div class="absolute inset-x-0 bottom-0 z-20 flex translate-y-1/2 justify-center px-6">
+    <nav class="flex items-center gap-3 rounded-2xl bg-white px-6 py-3 shadow-xl ring-1 ring-black/5">
+      <% if signed_in? %>
+        <%= link_to "My schedule", my_schedule_path, class: "px-2 text-sm font-semibold text-gray-700 no-underline transition hover:text-brand-purple" %>
+        <span class="h-5 w-px bg-gray-200" aria-hidden="true"></span>
+        <span class="flex items-center gap-2 pl-1">
+          <%= render AvatarComponent.new(name: current_user.login, url: current_user.profile_picture_url, size: :sm) %>
+          <span class="hidden text-sm font-medium text-gray-700 sm:inline"><%= current_user.login %></span>
+        </span>
+        <%= button_to "Log out", logout_path,
+              method: :delete,
+              class: "cursor-pointer rounded-full bg-brand-purple px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-purple/90" %>
+      <% else %>
+        <span class="px-2 text-sm text-gray-600">Create or join meetups</span>
+        <%# Turbo is disabled so the cross-origin OAuth redirect is a normal browser
+            navigation (a fetch submission would trip CORS on the provider redirect). %>
+        <%= button_to "Log in", "/auth/concat",
+              method: :post,
+              form: { data: { turbo: false } },
+              class: "cursor-pointer rounded-full bg-brand-purple px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-purple/90" %>
+      <% end %>
+    </nav>
+  </div>
+</div>

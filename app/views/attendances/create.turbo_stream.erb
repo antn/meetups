@@ -1,0 +1,3 @@
+<%= turbo_stream.replace dom_id(@meetup, :rsvp) do %>
+  <%= render RsvpButtonComponent.new(meetup: @meetup, viewer: current_user) %>
+<% end %>

@@ -1,0 +1,54 @@
+<% content_for :title, "Locations · Stafftools" %>
+
+<div class="flex items-center justify-between">
+  <div>
+    <h1 class="text-2xl font-bold tracking-tight text-gray-900">Locations</h1>
+    <p class="mt-1 text-sm text-gray-500">Rooms and spaces meetups can be booked into. Inactive locations can't be booked.</p>
+  </div>
+  <%= link_to new_stafftools_location_path, class: "inline-flex items-center gap-1.5 rounded-full bg-brand-purple px-4 py-2 text-sm font-semibold text-white no-underline shadow-sm transition hover:bg-brand-purple/90" do %>
+    <%= heroicon "plus", variant: "mini", class: "h-4 w-4" %>
+    Add location
+  <% end %>
+</div>
+
+<% if @locations.any? %>
+  <div class="mt-6 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+    <table class="min-w-full divide-y divide-gray-100 text-sm">
+      <thead class="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">
+        <tr>
+          <th class="px-6 py-3">Name</th>
+          <th class="px-6 py-3">Description</th>
+          <th class="px-6 py-3">Status</th>
+          <th class="px-6 py-3 text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% @locations.each do |location| %>
+          <tr>
+            <td class="px-6 py-4 font-medium text-gray-900"><%= location.name %></td>
+            <td class="px-6 py-4 text-gray-600"><%= location.description.presence || "—" %></td>
+            <td class="px-6 py-4">
+              <% if location.active? %>
+                <span class="inline-flex rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-semibold text-green-700 ring-1 ring-green-200">Active</span>
+              <% else %>
+                <span class="inline-flex rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-500">Inactive</span>
+              <% end %>
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex items-center justify-end gap-3">
+                <%= link_to "Edit", edit_stafftools_location_path(location), class: "font-medium text-brand-purple no-underline hover:underline" %>
+                <%= button_to "Remove", stafftools_location_path(location), method: :delete,
+                      form: { data: { turbo_confirm: "Remove this location?" } },
+                      class: "cursor-pointer font-medium text-red-600 hover:underline" %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <div class="mt-6 rounded-2xl border border-dashed border-gray-300 bg-white p-10 text-center">
+    <p class="text-sm text-gray-500">No locations yet. Add one so meetups have somewhere to meet.</p>
+  </div>
+<% end %>

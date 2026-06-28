@@ -1,0 +1,80 @@
+<% content_for :title, "#{@meetup.title} · OffKai Expo" %>
+<% tz = @meetup.event.tz %>
+<% starts_at = @meetup.starts_at.in_time_zone(tz) %>
+<% ends_at = @meetup.ends_at.in_time_zone(tz) %>
+
+<%= link_to root_path, class: "inline-flex items-center gap-1 text-sm font-medium text-gray-500 no-underline transition hover:text-brand-purple" do %>
+  <%= heroicon "arrow-left", variant: "mini", class: "h-4 w-4" %>
+  Back to schedule
+<% end %>
+
+<article class="mt-4 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+  <div class="border-b border-gray-100 bg-gradient-to-r from-brand-purple to-brand-pink px-6 py-6 sm:px-8">
+    <% if @meetup.editable_by?(current_user) %>
+      <%= link_to edit_meetup_path(@meetup.public_id), class: "float-right inline-flex items-center gap-1 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white no-underline ring-1 ring-white/40 transition hover:bg-white/30" do %>
+        <%= heroicon "pencil-square", variant: "mini", class: "h-3.5 w-3.5" %>
+        Edit
+      <% end %>
+    <% end %>
+    <% if @meetup.pending? %>
+      <span class="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-semibold text-white ring-1 ring-white/40">
+        <%= heroicon "clock", variant: "mini", class: "h-3.5 w-3.5" %>
+        Pending review
+      </span>
+    <% end %>
+    <h1 class="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl"><%= @meetup.title %></h1>
+    <p class="mt-1 text-white/80">Hosted by <span class="font-semibold"><%= @meetup.user.login %></span></p>
+  </div>
+
+  <div class="space-y-6 px-6 py-6 sm:px-8">
+    <%# Key details %>
+    <dl class="grid gap-4 sm:grid-cols-3">
+      <div>
+        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">Location</dt>
+        <dd class="mt-1 flex items-center gap-1.5 font-medium text-gray-900">
+          <%= heroicon "map-pin", variant: "mini", class: "h-4 w-4 text-brand-pink" %>
+          <%= @meetup.location.name %>
+        </dd>
+      </div>
+      <div>
+        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">Day</dt>
+        <dd class="mt-1 flex items-center gap-1.5 font-medium text-gray-900">
+          <%= heroicon "calendar-days", variant: "mini", class: "h-4 w-4 text-brand-pink" %>
+          <%= @meetup.scheduling_day.date.strftime("%A, %b %-d") %>
+        </dd>
+      </div>
+      <div>
+        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">Time</dt>
+        <dd class="mt-1 flex items-center gap-1.5 font-medium text-gray-900">
+          <%= heroicon "clock", variant: "mini", class: "h-4 w-4 text-brand-pink" %>
+          <%= starts_at.strftime("%-l:%M %p") %> &ndash; <%= ends_at.strftime("%-l:%M %p") %>
+        </dd>
+      </div>
+    </dl>
+
+    <% if @meetup.tags.any? %>
+      <div class="flex flex-wrap gap-1.5">
+        <% @meetup.tags.each do |tag| %>
+          <span class="rounded-full px-2.5 py-0.5 text-xs font-medium <%= tag_chip_classes(tag.color) %>"><%= tag.name %></span>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if @meetup.description.present? %>
+      <div>
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-400">About</h2>
+        <p class="mt-2 leading-relaxed text-gray-700"><%= @meetup.description %></p>
+      </div>
+    <% end %>
+
+    <% if @meetup.approved? %>
+      <div class="flex items-center gap-3">
+        <%= render RsvpButtonComponent.new(meetup: @meetup, viewer: current_user) %>
+      </div>
+    <% else %>
+      <p class="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800 ring-1 ring-amber-200">
+        This meetup is awaiting admin approval. Only you can see its details until it's approved.
+      </p>
+    <% end %>
+  </div>
+</article>

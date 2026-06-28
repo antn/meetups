@@ -1,0 +1,13 @@
+<% if signed_in %>
+  <%= link_to helpers.new_meetup_path(slot: slot_param), class: STYLE do %>
+    <%= heroicon "plus", variant: "mini", class: "h-4 w-4" %>
+    <%= label %>
+  <% end %>
+<% else %>
+  <sign-in-trigger class="contents">
+    <button type="button" class="<%= STYLE %>">
+      <%= heroicon "plus", variant: "mini", class: "h-4 w-4" %>
+      <%= label %>
+    </button>
+  </sign-in-trigger>
+<% end %>

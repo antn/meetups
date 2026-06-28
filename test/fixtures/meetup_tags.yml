@@ -1,0 +1,11 @@
+# frozen_string_literal: true
+
+pending_vtuber_cosplay:
+  meetup: pending_vtuber
+  tag: cosplay
+  public_id: mtagpending1
+
+approved_cosplay_cosplay:
+  meetup: approved_cosplay
+  tag: cosplay
+  public_id: mtagappr0001

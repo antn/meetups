@@ -1,0 +1,13 @@
+<% content_for :title, "New event · Stafftools" %>
+
+<%= link_to stafftools_events_path, class: "inline-flex items-center gap-1 text-sm font-medium text-gray-500 no-underline transition hover:text-brand-purple" do %>
+  <%= heroicon "arrow-left", variant: "mini", class: "h-4 w-4" %>
+  Events
+<% end %>
+
+<h1 class="mt-4 text-2xl font-bold tracking-tight text-gray-900">New event</h1>
+<p class="mt-1 text-sm text-gray-500">After creating it, use “Set active” to start accepting meetups for it.</p>
+
+<div class="mt-6 max-w-xl rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+  <%= render "form", event: @event, url: stafftools_events_path, method: :post, submit_label: "Create event" %>
+</div>

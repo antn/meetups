@@ -1,0 +1,61 @@
+<% content_for :title, "Events · Stafftools" %>
+
+<div class="flex items-center justify-between">
+  <div>
+    <h1 class="text-2xl font-bold tracking-tight text-gray-900">Events</h1>
+    <p class="mt-1 text-sm text-gray-500">The active event is the one currently accepting meetups. Only one can be active at a time.</p>
+  </div>
+  <%= link_to new_stafftools_event_path, class: "inline-flex items-center gap-1.5 rounded-full bg-brand-purple px-4 py-2 text-sm font-semibold text-white no-underline shadow-sm transition hover:bg-brand-purple/90" do %>
+    <%= heroicon "plus", variant: "mini", class: "h-4 w-4" %>
+    New event
+  <% end %>
+</div>
+
+<% if @events.any? %>
+  <div class="mt-6 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+    <table class="min-w-full divide-y divide-gray-100 text-sm">
+      <thead class="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">
+        <tr>
+          <th class="px-6 py-3">Name</th>
+          <th class="px-6 py-3">Time zone</th>
+          <th class="px-6 py-3">Status</th>
+          <th class="px-6 py-3 text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% @events.each do |event| %>
+          <tr>
+            <td class="px-6 py-4 font-medium text-gray-900"><%= event.name %></td>
+            <td class="px-6 py-4 text-gray-600"><%= event.time_zone %></td>
+            <td class="px-6 py-4">
+              <% if event.active? %>
+                <span class="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-semibold text-green-700 ring-1 ring-green-200">
+                  <%= heroicon "check-circle", variant: "mini", class: "h-3.5 w-3.5" %>
+                  Active
+                </span>
+              <% else %>
+                <span class="inline-flex rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-500">Inactive</span>
+              <% end %>
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex items-center justify-end gap-3">
+                <% unless event.active? %>
+                  <%= button_to "Set active", activate_stafftools_event_path(event), method: :patch,
+                        class: "cursor-pointer font-medium text-green-700 hover:underline" %>
+                <% end %>
+                <%= link_to "Edit", edit_stafftools_event_path(event), class: "font-medium text-brand-purple no-underline hover:underline" %>
+                <%= button_to "Delete", stafftools_event_path(event), method: :delete,
+                      form: { data: { turbo_confirm: "Delete this event? This can't be undone." } },
+                      class: "cursor-pointer font-medium text-red-600 hover:underline" %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <div class="mt-6 rounded-2xl border border-dashed border-gray-300 bg-white p-10 text-center">
+    <p class="text-sm text-gray-500">No events yet. Create one to start scheduling meetups.</p>
+  </div>
+<% end %>

@@ -1,0 +1,31 @@
+<day-tabs class="block">
+  <%# Day selector %>
+  <div class="flex flex-wrap items-center gap-2" role="tablist" aria-label="Select a day">
+    <% days.each_with_index do |day, i| %>
+      <button type="button"
+              role="tab"
+              data-targets="day-tabs.tabs"
+              data-action="click:day-tabs#select"
+              data-index="<%= i %>"
+              aria-selected="<%= i == selected_index %>"
+              class="<%= tab_classes(i == selected_index) %>">
+        <%= day.date.strftime("%A") %>
+        <span class="ml-1 font-normal opacity-75"><%= day.date.strftime("%b %-d") %></span>
+      </button>
+    <% end %>
+  </div>
+
+  <%# One panel per day; only the first is visible. %>
+  <% days.each_with_index do |day, i| %>
+    <div data-targets="day-tabs.panels" role="tabpanel" class="mt-6" <%= "hidden" unless i == selected_index %>>
+      <%= render ScheduleDayComponent.new(
+            day: day,
+            slots: slots_for(day),
+            active_location_count: active_location_count,
+            viewer: viewer,
+            today: i == today_index,
+            show_open_slots: show_open_slots
+          ) %>
+    </div>
+  <% end %>
+</day-tabs>

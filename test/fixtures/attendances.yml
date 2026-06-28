@@ -1,0 +1,7 @@
+# frozen_string_literal: true
+
+# Admin is going to the approved Cosplay Contest.
+admin_going_cosplay:
+  user: admin
+  meetup: approved_cosplay
+  public_id: attnadmin001

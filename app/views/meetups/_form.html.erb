@@ -1,0 +1,83 @@
+<%# Shared meetup form for new/edit, on both the public site and stafftools.
+    Locals: meetup, event, url, method, submit_label, selected_slot, cancel_path %>
+<% locations = (event.locations.active.to_a + [ meetup.location ].compact).uniq.sort_by(&:name) %>
+<% selected_tag_ids = meetup.meetup_tags.map(&:tag_id) %>
+
+<meetup-form data-booked="<%= meetup_booked_slot_keys(event, except: meetup).to_json %>" class="block max-w-xl">
+  <%= form_with model: meetup, url: url, method: method, class: "space-y-5" do |f| %>
+    <% if meetup.errors.any? %>
+      <div class="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-800 ring-1 ring-red-200">
+        <p class="font-semibold">Please fix the following:</p>
+        <ul class="mt-1 list-disc pl-5">
+          <% meetup.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div>
+      <%= f.label :title, class: "block text-sm font-medium text-gray-700" %>
+      <%= f.text_field :title, class: "mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-brand-purple focus:ring-brand-purple" %>
+    </div>
+
+    <div>
+      <%= f.label :description, class: "block text-sm font-medium text-gray-700" %>
+      <%= f.text_area :description, rows: 3, minlength: 15, maxlength: 280, class: "mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-brand-purple focus:ring-brand-purple" %>
+      <p class="mt-1 text-xs text-gray-400">15–280 characters.</p>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <%= f.label :slot, "Day & time", class: "block text-sm font-medium text-gray-700" %>
+        <select name="meetup[slot]"
+                id="meetup_slot"
+                data-target="meetup-form.slot"
+                data-action="change:meetup-form#sync"
+                class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-brand-purple focus:ring-brand-purple">
+          <option value="">Select a day &amp; time</option>
+          <% meetup_slot_groups(event).each do |group| %>
+            <optgroup label="<%= group[:label] %>">
+              <% group[:options].each do |slot| %>
+                <% selected = slot[:value] == selected_slot %>
+                <option value="<%= slot[:value] %>" data-epoch="<%= slot[:epoch] %>" data-short="<%= slot[:label] %>" data-full="<%= slot[:full] %>" <%= "selected" if selected %>><%= selected ? slot[:full] : slot[:label] %></option>
+              <% end %>
+            </optgroup>
+          <% end %>
+        </select>
+      </div>
+
+      <div>
+        <%= f.label :location_id, "Location", class: "block text-sm font-medium text-gray-700" %>
+        <select name="meetup[location_id]"
+                id="meetup_location_id"
+                data-target="meetup-form.location"
+                data-action="change:meetup-form#sync"
+                class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-brand-purple focus:ring-brand-purple">
+          <option value="">Select a location</option>
+          <% locations.each do |location| %>
+            <option value="<%= location.id %>" <%= "selected" if location.id == meetup.location_id %>><%= location.name %></option>
+          <% end %>
+        </select>
+      </div>
+    </div>
+
+    <fieldset>
+      <legend class="text-sm font-medium text-gray-700">Tags</legend>
+      <p class="text-xs text-gray-400">Pick at least one.</p>
+      <div class="mt-2 flex flex-wrap gap-2">
+        <% event.tags.order(:name).each do |tag| %>
+          <label class="cursor-pointer">
+            <%= check_box_tag "meetup[tag_ids][]", tag.id, selected_tag_ids.include?(tag.id), id: "meetup_tag_#{tag.id}", class: "peer sr-only" %>
+            <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-gray-200 transition peer-checked:ring-2 peer-checked:ring-gray-900 <%= tag_chip_classes(tag.color) %>"><%= tag.name %></span>
+          </label>
+        <% end %>
+      </div>
+    </fieldset>
+
+    <div class="flex items-center gap-3 pt-2">
+      <%= f.submit submit_label, class: "cursor-pointer rounded-full bg-brand-purple px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-purple/90" %>
+      <%= link_to "Cancel", cancel_path, class: "text-sm font-medium text-gray-500 no-underline hover:text-gray-700" %>
+    </div>
+  <% end %>
+</meetup-form>
