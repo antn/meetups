@@ -58,6 +58,9 @@ gem "omniauth-rails_csrf_protection"
 # Base for the custom Concat OAuth2 strategy (lib/omni_auth/strategies/concat.rb)
 gem "omniauth-oauth2"
 
+# Transactional email delivery in production [https://resend.com]
+gem "resend"
+
 group :development, :test do
   # Loads environment variables from .env files [https://github.com/bkeepers/dotenv]
   gem "dotenv-rails"

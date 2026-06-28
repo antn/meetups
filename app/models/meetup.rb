@@ -19,6 +19,11 @@ class Meetup < ApplicationRecord
   # `index_meetups_unique_active_slot` (where "status NOT IN (2, 3)"). Do not reorder.
   enum :status, { pending: 0, approved: 1, rejected: 2, cancelled: 3 }, default: :pending
 
+  # Keep the submitter informed through the moderation lifecycle. Cancellation
+  # (by the submitter) sends nothing.
+  after_create_commit :send_meetup_requested_notification
+  after_update_commit :send_status_change_notification
+
   # Statuses that release the slot and hide the meetup from listings: a rejected
   # meetup (by an admin) or a cancelled one (by the submitter).
   INACTIVE_STATUSES = %i[rejected cancelled].freeze
@@ -64,6 +69,20 @@ class Meetup < ApplicationRecord
     starts_at + DURATION
   end
 
+  # Human-readable start date in the event's timezone, e.g. "Friday, May 2, 2025".
+  def formatted_start_date
+    return if starts_at.blank?
+
+    starts_at.in_time_zone(event.tz).strftime("%A, %B %-d, %Y")
+  end
+
+  # Human-readable time range in the event's timezone, e.g. "1 PM - 2 PM".
+  def formatted_duration
+    return if starts_at.blank?
+
+    "#{starts_at.in_time_zone(event.tz).strftime("%-l %p")} - #{ends_at.in_time_zone(event.tz).strftime("%-l %p")}"
+  end
+
   # Whether a viewer may see this meetup's details (beyond its location/timeslot
   # hold). Approved meetups are public; pending meetups are visible only to the
   # submitter and admins; rejected meetups are visible to no one.
@@ -103,6 +122,20 @@ class Meetup < ApplicationRecord
   end
 
   private
+
+  def send_meetup_requested_notification
+    MeetupsMailer.meetup_requested(meetup: self).deliver_later
+  end
+
+  def send_status_change_notification
+    return unless saved_change_to_status?
+
+    if approved?
+      MeetupsMailer.meetup_approved(meetup: self).deliver_later
+    elsif rejected?
+      MeetupsMailer.meetup_rejected(meetup: self).deliver_later
+    end
+  end
 
   def starts_at_in_day_window
     return if starts_at.blank? || scheduling_day.blank?
