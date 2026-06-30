@@ -3,6 +3,7 @@
 class MeetupsController < ApplicationController
   before_action :require_authentication, only: %i[new create edit update]
   before_action :require_current_event, only: %i[new create]
+  before_action :require_accepting_meetups, only: %i[new create]
   before_action :set_editable_meetup, only: %i[edit update]
 
   # The public schedule for the active event (the site's home page).
@@ -69,6 +70,13 @@ class MeetupsController < ApplicationController
   def require_current_event
     @event = Event.current
     redirect_to root_path, alert: "There's no event accepting meetups right now." if @event.nil?
+  end
+
+  # Without a scheduling day and an active location there's nothing to book, so
+  # the form is unreachable — the "Create a meetup" button is hidden in this
+  # state, and hitting the URL directly 404s.
+  def require_accepting_meetups
+    raise ActionController::RoutingError, "Not Found" unless @event.accepting_meetups?
   end
 
   def set_editable_meetup

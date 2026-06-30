@@ -15,6 +15,12 @@ class Event < ApplicationRecord
     find_by(active: true)
   end
 
+  # A meetup needs both a day/time slot and a bookable location, so the event
+  # can only accept submissions once it has at least one of each.
+  def accepting_meetups?
+    scheduling_days.exists? && locations.active.exists?
+  end
+
   # Make this the active event, deactivating any other active event.
   def activate!
     transaction do

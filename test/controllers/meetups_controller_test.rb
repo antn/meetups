@@ -90,6 +90,18 @@ class MeetupsControllerTest < ActionDispatch::IntegrationTest
     assert_match "No event scheduled", response.body
   end
 
+  test "offers the create button when the event can accept meetups" do
+    get root_path
+    assert_match "Create a meetup", response.body
+  end
+
+  test "hides the create button when the event has no bookable location" do
+    locations(:main_stage).update!(active: false) # only an inactive location remains
+    get root_path
+    assert_response :success
+    assert_no_match "Create a meetup", response.body
+  end
+
   # --- show: a single meetup ---
 
   test "shows an approved meetup to anyone" do
@@ -155,6 +167,22 @@ class MeetupsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "Request a meetup", response.body
     assert_match "Main Stage", response.body
+  end
+
+  test "new 404s when the event has no bookable location" do
+    locations(:main_stage).update!(active: false)
+    sign_in users(:member)
+    get new_meetup_path
+    assert_response :not_found
+  end
+
+  test "create 404s when the event has no bookable location" do
+    locations(:main_stage).update!(active: false)
+    sign_in users(:member)
+    assert_no_difference -> { Meetup.count } do
+      post meetups_path, params: { meetup: { title: "X" } }
+    end
+    assert_response :not_found
   end
 
   test "new preselects the slot passed from an open timeslot" do
