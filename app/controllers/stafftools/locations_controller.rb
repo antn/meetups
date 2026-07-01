@@ -49,7 +49,7 @@ module Stafftools
     end
 
     def location_params
-      params.require(:location).permit(:name, :description, :active)
+      params.require(:location).permit(:name, :description, :active, :map_image)
     end
   end
 end

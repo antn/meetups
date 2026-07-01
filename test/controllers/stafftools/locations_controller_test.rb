@@ -25,6 +25,27 @@ module Stafftools
       assert created.active?
     end
 
+    test "creates a location with a map image" do
+      image = fixture_file_upload("map.png", "image/png")
+      assert_difference -> { Location.count }, 1 do
+        post stafftools_locations_path, params: {
+          location: { name: "Panel Room B", map_image: image }
+        }
+      end
+      assert_redirected_to stafftools_locations_path
+      assert Location.order(:created_at).last.map_image.attached?
+    end
+
+    test "rejects an unsupported map image type" do
+      file = fixture_file_upload("notes.txt", "text/plain")
+      assert_no_difference -> { Location.count } do
+        post stafftools_locations_path, params: {
+          location: { name: "Panel Room C", map_image: file }
+        }
+      end
+      assert_response :unprocessable_entity
+    end
+
     test "rejects a duplicate name" do
       assert_no_difference -> { Location.count } do
         post stafftools_locations_path, params: { location: { name: "Main Stage" } }

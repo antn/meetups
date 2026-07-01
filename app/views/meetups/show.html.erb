@@ -28,14 +28,7 @@
 
   <div class="space-y-6 px-6 py-6 sm:px-8">
     <%# Key details %>
-    <dl class="grid gap-4 sm:grid-cols-3">
-      <div>
-        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">Location</dt>
-        <dd class="mt-1 flex items-center gap-1.5 font-medium text-gray-900">
-          <%= heroicon "map-pin", variant: "mini", class: "h-4 w-4 text-brand-pink" %>
-          <%= @meetup.location.name %>
-        </dd>
-      </div>
+    <dl class="grid gap-4 sm:grid-cols-2">
       <div>
         <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">Day</dt>
         <dd class="mt-1 flex items-center gap-1.5 font-medium text-gray-900">
@@ -76,5 +69,27 @@
         This meetup is awaiting admin approval. Only you can see its details until it's approved.
       </p>
     <% end %>
+
+    <div>
+      <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-400">Location</h2>
+      <p class="mt-2 flex items-center gap-1.5 font-medium text-gray-900">
+        <%= heroicon "map-pin", variant: "mini", class: "h-4 w-4 text-brand-pink" %>
+        <%= @meetup.location.name %>
+        <p class="text-gray-500 text-sm mt-2"><%= @meetup.location.description %></p>
+      </p>
+      <a href="https://offkaiexpo.com/info/maps/" target="_blank" rel="noopener" class="group mt-2 block w-72 overflow-hidden rounded-xl border border-gray-100 no-underline">
+        <% if @meetup.location.map_image.attached? %>
+          <%= image_tag @meetup.location.map_image, alt: "Map showing #{@meetup.location.name}", class: "aspect-[16/9] w-full object-cover transition group-hover:opacity-90" %>
+        <% else %>
+          <div class="flex aspect-[16/9] w-full items-center justify-center bg-gray-50 text-gray-300">
+            <%= heroicon "map", variant: "outline", class: "h-10 w-10" %>
+          </div>
+        <% end %>
+        <span class="flex items-center justify-center gap-1 bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-500 group-hover:text-brand-purple">
+          <%= heroicon "map", variant: "mini", class: "h-4 w-4" %>
+          View maps
+        </span>
+      </a>
+    </div>
   </div>
 </article>

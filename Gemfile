@@ -45,6 +45,9 @@ gem "thruster", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"
 
+# S3-compatible client, used to store Active Storage uploads in Cloudflare R2 in production
+gem "aws-sdk-s3", require: false
+
 # Generate URL-friendly unique public IDs for records [https://github.com/radeno/nanoid.rb]
 gem "nanoid"
 
