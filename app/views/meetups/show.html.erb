@@ -1,4 +1,5 @@
 <% content_for :title, "#{@meetup.title} · OffKai Expo" %>
+<% content_for :meta_description, @meetup.description %>
 <% tz = @meetup.event.tz %>
 <% starts_at = @meetup.starts_at.in_time_zone(tz) %>
 <% ends_at = @meetup.ends_at.in_time_zone(tz) %>

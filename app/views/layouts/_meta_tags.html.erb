@@ -1,0 +1,15 @@
+<%# Basic SEO + Open Graph + Twitter Card tags. Override per-page with
+    content_for :title / :meta_description / :social_image. %>
+<meta name="description" content="<%= meta_description %>">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="<%= ApplicationHelper::SITE_NAME %>">
+<meta property="og:title" content="<%= social_title %>">
+<meta property="og:description" content="<%= meta_description %>">
+<meta property="og:url" content="<%= request.original_url %>">
+<meta property="og:image" content="<%= social_image_url %>">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="<%= social_title %>">
+<meta name="twitter:description" content="<%= meta_description %>">
+<meta name="twitter:image" content="<%= social_image_url %>">
