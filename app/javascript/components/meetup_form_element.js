@@ -1,16 +1,22 @@
-import { controller, target } from "@github/catalyst"
+import { controller, target, targets } from "@github/catalyst"
 
-// Cross-filters the meetup form's location and day/time dropdowns so a viewer
-// can't pick a slot that's already taken. A booking is a (location, start-time)
-// pair; selecting one side grays out the options on the other side that would
-// collide.
+// Drives the two-step meetup form: the viewer first picks a day & time, then the
+// available locations are revealed as clickable map cards. A booking is a
+// (location, start-time) pair; once a time is chosen, locations already taken at
+// that time are grayed out and can't be selected.
 //
 // Usage:
 //   <meetup-form data-booked='["12:1757696400", …]'>   // "<location_id>:<epoch>"
-//     <select data-target="meetup-form.location" data-action="change:meetup-form#sync">…</select>
 //     <select data-target="meetup-form.slot" data-action="change:meetup-form#sync">
 //       <option data-epoch="1757696400">…</option>
 //     </select>
+//     <p data-target="meetup-form.locationHint">Pick a time first…</p>
+//     <div data-target="meetup-form.locationGrid">
+//       <label data-target="meetup-form.locationCard">
+//         <input type="radio" data-target="meetup-form.locationInput"
+//                data-action="change:meetup-form#sync" value="12">
+//       </label>
+//     </div>
 //   </meetup-form>
 class MeetupFormElement extends HTMLElement {
   connectedCallback() {
@@ -19,8 +25,8 @@ class MeetupFormElement extends HTMLElement {
   }
 
   sync() {
-    const locationId = this.location.value
-    const slotEpoch = this.location ? this.selectedEpoch() : null
+    const slotEpoch = this.selectedEpoch()
+    const locationId = this.selectedLocation()?.value
     const nowEpoch = Math.floor(Date.now() / 1000)
 
     // Gray out times that have already passed or are already taken in the chosen
@@ -34,17 +40,26 @@ class MeetupFormElement extends HTMLElement {
       option.textContent = option.selected ? option.dataset.full : option.dataset.short
     })
 
-    // Gray out the locations already taken at the chosen time.
-    this.location.querySelectorAll("option").forEach((option) => {
-      if (!option.value) return
-      option.disabled = Boolean(slotEpoch) && this.booked.has(`${option.value}:${slotEpoch}`)
+    // The location picker only appears once a time is chosen.
+    const hasSlot = Boolean(slotEpoch)
+    this.locationHint.hidden = hasSlot
+    this.locationGrid.hidden = !hasSlot
+
+    // Disable the location cards already taken at the chosen time.
+    this.locationInput.forEach((input) => {
+      const booked = hasSlot && this.booked.has(`${input.value}:${slotEpoch}`)
+      input.disabled = booked
+      const card = input.closest("label")
+      card.classList.toggle("pointer-events-none", booked)
+      card.classList.toggle("opacity-40", booked)
     })
 
-    // If a selection just became disabled (e.g. switching sides into a clash),
+    // If a selection just became disabled (e.g. changing the time into a clash),
     // clear it and re-run so the freed side opens back up.
     let cleared = false
-    if (this.location.selectedOptions[0]?.disabled) {
-      this.location.value = ""
+    const location = this.selectedLocation()
+    if (location?.disabled) {
+      location.checked = false
       cleared = true
     }
     if (this.slot.selectedOptions[0]?.disabled) {
@@ -54,13 +69,19 @@ class MeetupFormElement extends HTMLElement {
     if (cleared) this.sync()
   }
 
+  selectedLocation() {
+    return this.locationInput.find((input) => input.checked)
+  }
+
   selectedEpoch() {
     return this.slot.selectedOptions[0]?.dataset.epoch || null
   }
 }
 
-target(MeetupFormElement.prototype, "location")
 target(MeetupFormElement.prototype, "slot")
+target(MeetupFormElement.prototype, "locationHint")
+target(MeetupFormElement.prototype, "locationGrid")
+targets(MeetupFormElement.prototype, "locationInput")
 
 controller(MeetupFormElement)
 
