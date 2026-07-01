@@ -6,7 +6,7 @@ module Stafftools
 
     def index
       @query = params[:q].to_s.strip
-      @users = User.search(@query).order(:login)
+      @users = User.search(@query).order(:login).page(params[:page]).per(25)
     end
 
     def suspend

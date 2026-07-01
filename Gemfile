@@ -64,6 +64,9 @@ gem "omniauth-oauth2"
 # Transactional email delivery in production [https://resend.com]
 gem "resend"
 
+# Pagination for stafftools lists [https://github.com/kaminari/kaminari]
+gem "kaminari"
+
 group :development, :test do
   # Loads environment variables from .env files [https://github.com/bkeepers/dotenv]
   gem "dotenv-rails"

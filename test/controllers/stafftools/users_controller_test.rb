@@ -27,6 +27,26 @@ module Stafftools
       assert_no_match(/>member</, response.body)
     end
 
+    test "paginates the user list" do
+      # Enough users to spill past the 25-per-page limit.
+      30.times do |i|
+        User.create!(uid: 2000 + i, login: "paginated#{i}", email: "paginated#{i}@example.com", public_id: "userpaged#{i.to_s.rjust(3, '0')}")
+      end
+
+      get stafftools_users_path
+      assert_response :success
+      assert_select "nav.pagination"
+
+      get stafftools_users_path(page: 2)
+      assert_response :success
+      assert_select "nav.pagination"
+    end
+
+    test "handles out-of-range page numbers" do
+      get stafftools_users_path(page: 999)
+      assert_response :success
+    end
+
     test "suspends a user and revokes their sessions" do
       member = users(:member)
       session = member.user_sessions.create!(
