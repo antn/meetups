@@ -13,7 +13,7 @@ class SessionsController < ApplicationController
     user = User.from_omniauth(auth)
 
     if user.suspended?
-      redirect_to root_path, alert: "Your account has been suspended."
+      redirect_to root_path, alert: "Your account has been suspended. Please contact events@offkaiexpo.com."
     else
       login_user(user)
       redirect_to root_path, notice: "Signed in as #{user.login}."

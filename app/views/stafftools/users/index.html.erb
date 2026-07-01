@@ -88,7 +88,7 @@
   </div>
 
   <div class="mt-4 flex items-center justify-between text-sm text-gray-500">
-    <%= page_entries_info @users, entry_name: "user" %>
+    <span><%= page_entries_info @users, entry_name: "user" %></span>
     <%= paginate @users, params: { q: @query } %>
   </div>
 <% else %>
