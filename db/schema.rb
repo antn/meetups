@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_01_161320) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_01_170000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -97,6 +97,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_161320) do
     t.bigint "location_id", null: false
     t.string "public_id", limit: 12, null: false
     t.text "rejection_reason"
+    t.datetime "reminder_sent_at"
     t.datetime "reviewed_at"
     t.bigint "reviewed_by_id"
     t.bigint "scheduling_day_id", null: false
@@ -112,6 +113,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_161320) do
     t.index ["reviewed_by_id"], name: "index_meetups_on_reviewed_by_id"
     t.index ["scheduling_day_id"], name: "index_meetups_on_scheduling_day_id"
     t.index ["starts_at"], name: "index_meetups_on_starts_at"
+    t.index ["starts_at"], name: "index_meetups_pending_reminder", where: "((reminder_sent_at IS NULL) AND (status = 1))"
     t.index ["status"], name: "index_meetups_on_status"
     t.index ["user_id"], name: "index_meetups_on_user_id"
   end

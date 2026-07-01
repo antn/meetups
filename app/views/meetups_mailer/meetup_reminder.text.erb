@@ -1,0 +1,18 @@
+Hi <%= @user.login %>,
+
+<% if @is_host %>Your meetup is starting in about an hour. Here are the details:<% else %>A meetup you RSVP'd to is starting in about an hour. Here are the details:<% end %>
+
+Name: <%= @meetup.title %>
+Meetup area: <%= @meetup.location.name %>
+Date: <%= @meetup.formatted_start_date %>
+Time: <%= @meetup.formatted_duration %>
+
+See the full details here: https://meetups.offkaiexpo.com/meetups/<%= @meetup.public_id %>
+
+<% if @is_host %>Thanks for hosting — we hope it goes great!<% else %>We hope you have a great time!<% end %>
+
+If you have any questions, reach out to us at events@offkaiexpo.com.
+
+Thanks,
+
+The OffKai Expo Team

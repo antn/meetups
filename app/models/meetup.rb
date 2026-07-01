@@ -4,6 +4,9 @@ class Meetup < ApplicationRecord
   # Fixed meetup length. A meetup runs starts_at .. starts_at + DURATION.
   DURATION = 1.hour
 
+  # How long before a meetup starts we remind its host and attendees.
+  REMINDER_LEAD = 1.hour
+
   belongs_to :event
   belongs_to :user
   belongs_to :location
@@ -23,6 +26,9 @@ class Meetup < ApplicationRecord
   # (by the submitter) sends nothing.
   after_create_commit :send_meetup_requested_notification
   after_update_commit :send_status_change_notification
+  # If the host reschedules, any reminder we already sent pointed at the old
+  # time, so arm a fresh one for the new start.
+  after_update_commit :rearm_reminder_on_reschedule
 
   # Statuses that release the slot and hide the meetup from listings: a rejected
   # meetup (by an admin) or a cancelled one (by the submitter).
@@ -43,6 +49,13 @@ class Meetup < ApplicationRecord
   scope :visible, -> { where.not(status: INACTIVE_STATUSES) }
   scope :occupying, -> { where.not(status: INACTIVE_STATUSES) }
   scope :for_day, ->(day) { where(scheduling_day: day) }
+
+  # Approved meetups whose start is within REMINDER_LEAD from now and that
+  # haven't been reminded yet. Bounding the low end at `from` excludes meetups
+  # that have already started (e.g. one approved after it began).
+  scope :due_for_reminder, ->(from = Time.current) {
+    approved.where(reminder_sent_at: nil, starts_at: from..(from + REMINDER_LEAD))
+  }
 
   # Meetups carrying any of the given tag public_ids (OR). A subquery keeps it
   # free of joins/duplicates so it composes cleanly with includes/.or.
@@ -121,7 +134,36 @@ class Meetup < ApplicationRecord
     update!(status: :cancelled)
   end
 
+  # Everyone who should hear that this meetup is about to start: its host plus
+  # anyone who RSVP'd. Deduped (the host may also have RSVP'd).
+  def reminder_recipients
+    (attendees.to_a + [ user ]).uniq
+  end
+
+  # Send the "starting soon" reminder to every recipient, but only claim the
+  # send once: the conditional UPDATE stamps reminder_sent_at atomically so two
+  # overlapping sweeps can't both fire. Returns true if this call did the send.
+  def deliver_start_reminder!
+    claimed = self.class.where(id: id, reminder_sent_at: nil).update_all(reminder_sent_at: Time.current)
+    return false unless claimed == 1
+
+    reminder_recipients.each do |recipient|
+      MeetupsMailer.meetup_reminder(meetup: self, user: recipient).deliver_later
+    end
+    true
+  end
+
   private
+
+  # A start-time change invalidates a reminder we've already sent. Clear the
+  # stamp (via update_column to avoid re-triggering commit callbacks) so the
+  # sweep re-arms it for the new time.
+  def rearm_reminder_on_reschedule
+    return unless saved_change_to_starts_at?
+    return if reminder_sent_at.nil?
+
+    update_column(:reminder_sent_at, nil)
+  end
 
   def send_meetup_requested_notification
     MeetupsMailer.meetup_requested(meetup: self).deliver_later
