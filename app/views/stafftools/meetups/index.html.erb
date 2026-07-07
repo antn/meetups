@@ -54,6 +54,27 @@
               </div>
             </dl>
 
+            <% if meetup.location.description.present? || meetup.location.map_image.attached? %>
+              <div class="mt-3 flex gap-3 rounded-xl border border-gray-100 bg-gray-50/60 p-3">
+                <div class="w-32 shrink-0 overflow-hidden rounded-lg border border-gray-100">
+                  <% if meetup.location.map_image.attached? %>
+                    <%= image_tag meetup.location.map_image, alt: "Map showing #{meetup.location.name}", class: "aspect-[16/9] w-full object-cover" %>
+                  <% else %>
+                    <div class="flex aspect-[16/9] w-full items-center justify-center bg-gray-100 text-gray-300">
+                      <%= heroicon "map", variant: "outline", class: "h-6 w-6" %>
+                    </div>
+                  <% end %>
+                </div>
+                <div class="min-w-0">
+                  <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Spot</p>
+                  <p class="mt-0.5 text-sm font-medium text-gray-900"><%= meetup.location.name %></p>
+                  <% if meetup.location.description.present? %>
+                    <p class="mt-0.5 text-xs leading-relaxed text-gray-500"><%= meetup.location.description %></p>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+
             <% if meetup.tags.any? %>
               <div class="mt-3 flex flex-wrap gap-1.5">
                 <% meetup.tags.each do |tag| %>
@@ -76,13 +97,14 @@
           <% if meetup.pending? %>
             <div class="shrink-0 sm:w-64">
               <%= button_to "Approve", approve_stafftools_meetup_path(meetup), method: :patch,
-                    class: "flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-full bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-green-700" %>
+                    data: { loading_label: "Approving…" },
+                    class: "flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-full bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-green-700 disabled:pointer-events-none" %>
 
               <%= form_with url: reject_stafftools_meetup_path(meetup), method: :patch, class: "mt-3 space-y-2" do %>
                 <%= text_field_tag :rejection_reason, nil,
                       placeholder: "Reason for rejection",
                       class: "block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-red-400 focus:ring-red-400" %>
-                <%= submit_tag "Reject", class: "w-full cursor-pointer rounded-full border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50" %>
+                <%= submit_tag "Reject", data: { loading_label: "Rejecting…" }, class: "w-full cursor-pointer rounded-full border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:pointer-events-none" %>
               <% end %>
             </div>
           <% elsif meetup.approved? %>
@@ -97,18 +119,20 @@
               </div>
 
               <%= button_to "Move to pending", unapprove_stafftools_meetup_path(meetup), method: :patch,
+                    data: { loading_label: "Moving…" },
                     form: { data: { confirm: "Move “#{meetup.title}” back to pending? It will be unpublished until re-approved." } },
-                    class: "flex w-full cursor-pointer items-center justify-center rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50" %>
+                    class: "flex w-full cursor-pointer items-center justify-center rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:pointer-events-none" %>
 
               <%= button_to "Cancel meetup", cancel_stafftools_meetup_path(meetup), method: :patch,
+                    data: { loading_label: "Cancelling…" },
                     form: { data: { confirm: "Cancel “#{meetup.title}”? This unpublishes it and frees the slot." } },
-                    class: "flex w-full cursor-pointer items-center justify-center rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50" %>
+                    class: "flex w-full cursor-pointer items-center justify-center rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:pointer-events-none" %>
 
               <%= form_with url: reject_stafftools_meetup_path(meetup), method: :patch, class: "space-y-2" do %>
                 <%= text_field_tag :rejection_reason, nil,
                       placeholder: "Reason for rejection",
                       class: "block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-red-400 focus:ring-red-400" %>
-                <%= submit_tag "Reject", class: "w-full cursor-pointer rounded-full border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50" %>
+                <%= submit_tag "Reject", data: { loading_label: "Rejecting…" }, class: "w-full cursor-pointer rounded-full border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:pointer-events-none" %>
               <% end %>
             </div>
           <% elsif meetup.reviewed_at.present? %>

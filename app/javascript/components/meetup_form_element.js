@@ -25,10 +25,6 @@ class MeetupFormElement extends HTMLElement {
   }
 
   sync() {
-    // An approved meetup renders its day/time & location read-only, omitting the
-    // slot/location targets — there's nothing to drive, so bail out.
-    if (!this.slot) return
-
     const slotEpoch = this.selectedEpoch()
     const locationId = this.selectedLocation()?.value
     const nowEpoch = Math.floor(Date.now() / 1000)

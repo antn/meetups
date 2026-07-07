@@ -25,7 +25,7 @@ class StaffReviewElement extends HTMLElement {
 
     const card = form.closest("[data-review-card]")
     const buttons = form.querySelectorAll("button, input[type=submit]")
-    buttons.forEach((button) => (button.disabled = true))
+    buttons.forEach((button) => this.setLoading(button))
 
     try {
       const response = await fetch(form.action, {
@@ -40,13 +40,42 @@ class StaffReviewElement extends HTMLElement {
         this.removeCard(card)
         this.toast(data.notice, "notice")
       } else {
-        buttons.forEach((button) => (button.disabled = false))
+        buttons.forEach((button) => this.clearLoading(button))
         this.toast(data.alert || "Something went wrong.", "alert")
       }
     } catch (error) {
-      buttons.forEach((button) => (button.disabled = false))
+      buttons.forEach((button) => this.clearLoading(button))
       this.toast("Something went wrong. Please try again.", "alert")
     }
+  }
+
+  // Disable and visually dim a submit control the moment it's clicked, swapping
+  // its label to a "…" progress state so the moderator sees the click landed
+  // even while the PATCH is still in flight.
+  setLoading(button) {
+    button.disabled = true
+    button.classList.add("opacity-60", "cursor-wait")
+    const loadingLabel = button.dataset.loadingLabel
+    if (!loadingLabel) return
+
+    if (button.tagName === "INPUT") {
+      button.dataset.idleLabel = button.value
+      button.value = loadingLabel
+    } else {
+      button.dataset.idleLabel = button.textContent
+      button.textContent = loadingLabel
+    }
+  }
+
+  // Restore a control after a failed request so it can be retried.
+  clearLoading(button) {
+    button.disabled = false
+    button.classList.remove("opacity-60", "cursor-wait")
+    const idleLabel = button.dataset.idleLabel
+    if (idleLabel === undefined) return
+
+    if (button.tagName === "INPUT") button.value = idleLabel
+    else button.textContent = idleLabel
   }
 
   updateCounts(counts) {

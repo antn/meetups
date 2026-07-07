@@ -5,12 +5,9 @@
   Back to meetup
 <% end %>
 
-<% lock_slot = @meetup.approved? && !current_user.site_admin? %>
 <h1 class="mt-4 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">Edit meetup</h1>
 <% if @meetup.approved? %>
-  <p class="mt-1 text-gray-500">
-    This meetup is already live — changes take effect right away.<% if lock_slot %> Its day/time and location are locked and can no longer be changed.<% end %>
-  </p>
+  <p class="mt-1 text-gray-500">This meetup is already live — changes take effect right away.</p>
 <% end %>
 
 <div class="mt-6">
@@ -21,6 +18,5 @@
         method: :patch,
         submit_label: "Save changes",
         selected_slot: @selected_slot,
-        lock_slot: lock_slot,
         cancel_path: meetup_path(@meetup.public_id) %>
 </div>

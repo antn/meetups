@@ -13,7 +13,7 @@ module Stafftools
       @status_counts = status_counts
 
       @meetups = current_event.meetups.where(status: @status)
-        .includes(:user, :location, :scheduling_day, :tags)
+        .includes(:user, :scheduling_day, :tags, location: { map_image_attachment: :blob })
         .order(:starts_at)
     end
 

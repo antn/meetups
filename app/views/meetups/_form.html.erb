@@ -2,9 +2,6 @@
     Locals: meetup, event, url, method, submit_label, selected_slot, cancel_path %>
 <% locations = (event.locations.active.to_a + [ meetup.location ].compact).uniq.sort_by(&:name) %>
 <% selected_tag_ids = meetup.meetup_tags.map(&:tag_id) %>
-<%# When lock_slot is set (an approved meetup edited by its submitter), the day/time
-    and location are frozen and shown read-only — the interactive pickers are omitted. %>
-<% lock_slot = local_assigns.fetch(:lock_slot, false) %>
 
 <meetup-form data-booked="<%= meetup_booked_slot_keys(event, except: meetup).to_json %>" class="block max-w-xl">
   <%= form_with model: meetup, url: url, method: method, class: "space-y-5" do |f| %>
@@ -30,30 +27,6 @@
       <p class="mt-1 text-xs text-gray-400">15–280 characters.</p>
     </div>
 
-    <% if lock_slot %>
-      <div>
-        <span class="block text-sm font-medium text-gray-700">Day &amp; time</span>
-        <div class="mt-1 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
-          <%= meetup.formatted_start_date %> · <%= meetup.formatted_duration %>
-        </div>
-        <p class="mt-1 text-xs text-gray-400">Time and location are locked once a meetup is approved.</p>
-      </div>
-
-      <div>
-        <span class="block text-sm font-medium text-gray-700">Location</span>
-        <div class="mt-1 overflow-hidden rounded-xl border border-gray-200 opacity-90">
-          <% if meetup.location.map_image.attached? %>
-            <%= image_tag meetup.location.map_image, alt: "Map showing #{meetup.location.name}", class: "aspect-[16/9] w-full max-w-xs object-cover" %>
-          <% end %>
-          <div class="px-3 py-2">
-            <span class="block text-sm font-medium text-gray-900"><%= meetup.location.name %></span>
-            <% if meetup.location.description.present? %>
-              <span class="mt-0.5 block text-xs text-gray-500"><%= meetup.location.description %></span>
-            <% end %>
-          </div>
-        </div>
-      </div>
-    <% else %>
     <div>
       <%= f.label :slot, "Day & time", class: "block text-sm font-medium text-gray-700" %>
       <select name="meetup[slot]"
@@ -112,7 +85,6 @@
         <% end %>
       </div>
     </fieldset>
-    <% end %>
 
     <fieldset>
       <legend class="text-sm font-medium text-gray-700">Tags</legend>
