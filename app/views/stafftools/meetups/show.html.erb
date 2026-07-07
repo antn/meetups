@@ -88,6 +88,23 @@
           <%= submit_tag "Reject", class: "shrink-0 cursor-pointer rounded-full border border-red-200 bg-white px-5 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50" %>
         <% end %>
       </div>
+    <% elsif @meetup.approved? %>
+      <div class="flex flex-col gap-3 border-t border-gray-100 pt-6 sm:flex-row sm:items-start">
+        <%= button_to "Move to pending", unapprove_stafftools_meetup_path(@meetup), method: :patch,
+              form: { data: { turbo_confirm: "Move “#{@meetup.title}” back to pending? It will be unpublished until re-approved." } },
+              class: "cursor-pointer rounded-full border border-gray-300 bg-white px-5 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50" %>
+
+        <%= button_to "Cancel meetup", cancel_stafftools_meetup_path(@meetup), method: :patch,
+              form: { data: { turbo_confirm: "Cancel “#{@meetup.title}”? This unpublishes it and frees the slot." } },
+              class: "cursor-pointer rounded-full border border-gray-300 bg-white px-5 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50" %>
+
+        <%= form_with url: reject_stafftools_meetup_path(@meetup), method: :patch, class: "flex flex-1 items-center gap-2" do %>
+          <%= text_field_tag :rejection_reason, nil,
+                placeholder: "Reason for rejection",
+                class: "block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-red-400 focus:ring-red-400" %>
+          <%= submit_tag "Reject", class: "shrink-0 cursor-pointer rounded-full border border-red-200 bg-white px-5 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50" %>
+        <% end %>
+      </div>
     <% end %>
   </div>
 </article>

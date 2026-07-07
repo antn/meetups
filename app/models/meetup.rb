@@ -22,8 +22,8 @@ class Meetup < ApplicationRecord
   # `index_meetups_unique_active_slot` (where "status NOT IN (2, 3)"). Do not reorder.
   enum :status, { pending: 0, approved: 1, rejected: 2, cancelled: 3 }, default: :pending
 
-  # Keep the submitter informed through the moderation lifecycle. Cancellation
-  # (by the submitter) sends nothing.
+  # Keep everyone informed through the moderation lifecycle: the submitter on
+  # every status change, plus RSVP'd attendees when a meetup is cancelled.
   after_create_commit :send_meetup_requested_notification
   after_update_commit :send_status_change_notification
   # If the host reschedules, any reminder we already sent pointed at the old
@@ -128,10 +128,18 @@ class Meetup < ApplicationRecord
     end
   end
 
-  # Cancellation is performed by the submitter (not an admin review), so it does
-  # not touch the reviewed_by/reviewed_at metadata. Frees the slot.
+  # Cancellation is not an admin review, so it leaves the reviewed_by/reviewed_at
+  # metadata untouched. Frees the slot and notifies the host and attendees.
   def cancel!
     update!(status: :cancelled)
+  end
+
+  # Undo a review decision, putting the meetup back in the pending queue and
+  # clearing the review metadata so it reads as untouched.
+  def revert_to_pending!
+    transaction do
+      update!(status: :pending, reviewed_by: nil, reviewed_at: nil, rejection_reason: nil)
+    end
   end
 
   # Everyone who should hear that this meetup is about to start: its host plus
@@ -176,6 +184,15 @@ class Meetup < ApplicationRecord
       MeetupsMailer.meetup_approved(meetup: self).deliver_later
     elsif rejected?
       MeetupsMailer.meetup_rejected(meetup: self).deliver_later
+    elsif cancelled?
+      # Cancellation affects everyone who was going, not just the host.
+      reminder_recipients.each do |recipient|
+        MeetupsMailer.meetup_cancelled(meetup: self, user: recipient).deliver_later
+      end
+    elsif pending?
+      # The only way to reach pending on update is a moderator reverting an
+      # earlier decision; on create this callback doesn't fire.
+      MeetupsMailer.meetup_reverted(meetup: self).deliver_later
     end
   end
 

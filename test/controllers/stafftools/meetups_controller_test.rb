@@ -105,6 +105,44 @@ module Stafftools
       assert_equal users(:admin).id, meetup.reviewed_by_id
     end
 
+    test "unapprove moves an approved meetup back to pending and clears review metadata" do
+      meetup = meetups(:approved_cosplay)
+      meetup.approve!(by: users(:admin))
+      assert_not_nil meetup.reload.reviewed_at
+      patch unapprove_stafftools_meetup_path(meetup)
+      assert_redirected_to stafftools_meetups_path
+      meetup.reload
+      assert_predicate meetup, :pending?
+      assert_nil meetup.reviewed_by_id
+      assert_nil meetup.reviewed_at
+    end
+
+    test "cancel unpublishes an approved meetup and emails the host and attendees" do
+      meetup = meetups(:approved_cosplay)
+      # Hosted by member with admin RSVP'd, so both should be notified.
+      assert_enqueued_emails 2 do
+        patch cancel_stafftools_meetup_path(meetup)
+      end
+      assert_redirected_to stafftools_meetups_path
+      assert_predicate meetup.reload, :cancelled?
+    end
+
+    test "unapprove emails the host that the meetup is back to pending" do
+      meetup = meetups(:approved_cosplay)
+      assert_enqueued_email_with MeetupsMailer, :meetup_reverted, args: [ { meetup: meetup } ] do
+        patch unapprove_stafftools_meetup_path(meetup)
+      end
+    end
+
+    test "reject can be applied to an already approved meetup" do
+      meetup = meetups(:approved_cosplay)
+      patch reject_stafftools_meetup_path(meetup), params: { rejection_reason: "Venue conflict" }
+      assert_redirected_to stafftools_meetups_path
+      meetup.reload
+      assert_predicate meetup, :rejected?
+      assert_equal "Venue conflict", meetup.rejection_reason
+    end
+
     test "approved meetups drop off the default pending list" do
       meetups(:pending_vtuber).approve!(by: users(:admin))
       get stafftools_meetups_path

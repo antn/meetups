@@ -19,6 +19,10 @@ class StaffReviewElement extends HTMLElement {
     if (!(form instanceof HTMLFormElement)) return
 
     event.preventDefault()
+
+    const confirmMessage = form.dataset.confirm
+    if (confirmMessage && !window.confirm(confirmMessage)) return
+
     const card = form.closest("[data-review-card]")
     const buttons = form.querySelectorAll("button, input[type=submit]")
     buttons.forEach((button) => (button.disabled = true))

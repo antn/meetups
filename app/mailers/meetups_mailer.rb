@@ -31,6 +31,29 @@ class MeetupsMailer < ApplicationMailer
     )
   end
 
+  # Sent to the host and each RSVP'd attendee when a meetup is cancelled.
+  def meetup_cancelled(meetup:, user:)
+    @meetup = meetup
+    @user = user
+    @is_host = user.id == meetup.user_id
+
+    mail(
+      to: @user.email,
+      subject: "OffKai Expo meetup cancelled: #{@meetup.title}",
+    )
+  end
+
+  # Sent to the host when a moderator moves an approved meetup back to pending.
+  def meetup_reverted(meetup:)
+    @meetup = meetup
+    @user = meetup.user
+
+    mail(
+      to: @user.email,
+      subject: "OffKai Expo meetup moved back to pending: #{@meetup.title}",
+    )
+  end
+
   # Sent to the host and each RSVP'd attendee shortly before a meetup starts.
   def meetup_reminder(meetup:, user:)
     @meetup = meetup

@@ -3,7 +3,7 @@
 module Stafftools
   class MeetupsController < ApplicationController
     before_action :require_current_event
-    before_action :set_meetup, only: %i[show approve reject edit update]
+    before_action :set_meetup, only: %i[show approve reject cancel unapprove edit update]
     before_action :require_editable, only: %i[edit update]
 
     STATUSES = Meetup.statuses.keys.freeze
@@ -67,6 +67,24 @@ module Stafftools
 
       @meetup.reject!(by: current_user, reason: reason)
       notice = "Rejected “#{@meetup.title}.”"
+      respond_to do |format|
+        format.html { redirect_to stafftools_meetups_path, notice: notice }
+        format.json { render json: { ok: true, notice: notice, counts: status_counts } }
+      end
+    end
+
+    def cancel
+      @meetup.cancel!
+      notice = "Cancelled “#{@meetup.title}.”"
+      respond_to do |format|
+        format.html { redirect_to stafftools_meetups_path, notice: notice }
+        format.json { render json: { ok: true, notice: notice, counts: status_counts } }
+      end
+    end
+
+    def unapprove
+      @meetup.revert_to_pending!
+      notice = "Moved “#{@meetup.title}” back to pending."
       respond_to do |format|
         format.html { redirect_to stafftools_meetups_path, notice: notice }
         format.json { render json: { ok: true, notice: notice, counts: status_counts } }
