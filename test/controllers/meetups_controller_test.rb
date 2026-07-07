@@ -319,6 +319,46 @@ class MeetupsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "the submitter can rename an approved meetup but not move its time or location" do
+    sign_in users(:member)
+    original = meetups(:approved_cosplay)
+    patch meetup_path(original.public_id), params: { meetup: {
+      title: "Renamed Cosplay Contest",
+      description: original.description,
+      location_id: locations(:storage).id,
+      slot: free_slot_param(12),
+      tag_ids: [ tags(:gaming).id ]
+    } }
+    meetup = original.reload
+    assert_redirected_to meetup_path(meetup.public_id)
+    assert_equal "Renamed Cosplay Contest", meetup.title
+    assert_equal original.location_id, meetup.location_id
+    assert_equal original.starts_at, meetup.starts_at
+  end
+
+  test "the approved-meetup edit form omits the day/time and location pickers for the submitter" do
+    sign_in users(:member)
+    get edit_meetup_path(meetups(:approved_cosplay).public_id)
+    assert_response :success
+    assert_no_match(/name="meetup\[slot\]"/, response.body)
+    assert_no_match(/name="meetup\[location_id\]"/, response.body)
+  end
+
+  test "admins can still move an approved meetup's time and location" do
+    sign_in users(:admin)
+    meetup = meetups(:approved_cosplay)
+    new_slot = free_slot_param(12)
+    patch meetup_path(meetup.public_id), params: { meetup: {
+      title: meetup.title,
+      description: meetup.description,
+      location_id: meetup.location_id,
+      slot: new_slot,
+      tag_ids: meetup.tag_ids
+    } }
+    assert_redirected_to meetup_path(meetup.public_id)
+    assert_equal free_epoch(12), meetup.reload.starts_at.to_i
+  end
+
   private
 
   def free_epoch(hour)

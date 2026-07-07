@@ -5,13 +5,14 @@
   <p class="mt-1 text-sm text-gray-500">Every submission for this event. Approving publishes a meetup; rejecting frees the slot.</p>
 </div>
 
+<staff-review data-action="submit:staff-review#submit">
 <div class="mt-6 flex flex-wrap gap-2">
   <% Stafftools::MeetupsController::STATUSES.each do |status| %>
     <% selected = status == @status %>
     <% state = selected ? "bg-brand-purple text-white" : "bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-gray-50" %>
     <%= link_to stafftools_meetups_path(status: status), class: "inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium no-underline transition #{state}" do %>
       <%= status.titleize %>
-      <span class="rounded-full px-1.5 text-xs <%= selected ? "bg-white/20" : "bg-gray-100" %>"><%= @status_counts[status] %></span>
+      <span data-targets="staff-review.counts" data-status="<%= status %>" class="rounded-full px-1.5 text-xs <%= selected ? "bg-white/20" : "bg-gray-100" %>"><%= @status_counts[status] %></span>
     <% end %>
   <% end %>
 </div>
@@ -19,7 +20,7 @@
 <% if @meetups.any? %>
   <div class="mt-6 space-y-4">
     <% @meetups.each do |meetup| %>
-      <article class="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+      <article id="meetup_<%= meetup.id %>" data-review-card class="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
         <div class="flex flex-col gap-6 p-6 sm:flex-row sm:items-start sm:justify-between">
           <div class="min-w-0">
             <div class="flex items-center gap-2">
@@ -102,3 +103,4 @@
     <p class="mt-2 text-sm text-gray-500">No <%= @status %> meetups.</p>
   </div>
 <% end %>
+</staff-review>

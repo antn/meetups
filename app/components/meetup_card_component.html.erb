@@ -30,6 +30,9 @@
       <%= render AvatarComponent.new(name: meetup.user.login, url: meetup.user.profile_picture_url, size: :sm) %>
       Hosted by <span class="font-medium text-gray-600"><%= meetup.user.login %></span>
     </p>
+    <% if meetup.description.present? %>
+      <p class="mt-1.5 text-xs leading-relaxed text-gray-500"><%= truncate(meetup.description, length: 100, omission: "…") %></p>
+    <% end %>
     <% if meetup.tags.any? %>
       <div class="mt-2.5 flex flex-wrap gap-1">
         <% meetup.tags.each do |tag| %>

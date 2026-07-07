@@ -55,7 +55,7 @@ class MeetupsController < ApplicationController
 
     Meetup.transaction do
       @meetup.assign_attributes(meetup_params)
-      assign_slot(@meetup, @selected_slot)
+      assign_slot(@meetup, @selected_slot) unless slot_locked?
       @meetup.tags = submitted_tags
       @meetup.save!
     end
@@ -91,7 +91,15 @@ class MeetupsController < ApplicationController
   end
 
   def meetup_params
-    params.require(:meetup).permit(:title, :description, :location_id)
+    permitted = [ :title, :description ]
+    permitted << :location_id unless slot_locked?
+    params.require(:meetup).permit(*permitted)
+  end
+
+  # An approved meetup is a live, advertised booking, so its day/time and
+  # location are frozen for the submitter. Admins may still move it.
+  def slot_locked?
+    @meetup&.approved? && !current_user.site_admin?
   end
 
   # The day/time picker submits one value, "<scheduling_day_id>:<starts_at epoch>",

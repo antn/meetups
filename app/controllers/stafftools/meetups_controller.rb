@@ -10,7 +10,7 @@ module Stafftools
 
     def index
       @status = STATUSES.include?(params[:status]) ? params[:status] : "pending"
-      @status_counts = STATUSES.index_with { |status| current_event.meetups.where(status: status).count }
+      @status_counts = status_counts
 
       @meetups = current_event.meetups.where(status: @status)
         .includes(:user, :location, :scheduling_day, :tags)
@@ -40,24 +40,44 @@ module Stafftools
 
     def approve
       @meetup.approve!(by: current_user)
-      redirect_to stafftools_meetups_path, notice: "Approved “#{@meetup.title}.”"
+      notice = "Approved “#{@meetup.title}.”"
+      respond_to do |format|
+        format.html { redirect_to stafftools_meetups_path, notice: notice }
+        format.json { render json: { ok: true, notice: notice, counts: status_counts } }
+      end
     rescue ActiveRecord::RecordInvalid => e
-      redirect_to stafftools_meetups_path, alert: "Couldn't approve: #{e.record.errors.full_messages.to_sentence}"
+      alert = "Couldn't approve: #{e.record.errors.full_messages.to_sentence}"
+      respond_to do |format|
+        format.html { redirect_to stafftools_meetups_path, alert: alert }
+        format.json { render json: { ok: false, alert: alert }, status: :unprocessable_entity }
+      end
     end
 
     def reject
       reason = params[:rejection_reason].to_s.strip
 
       if reason.blank?
-        redirect_to stafftools_meetups_path, alert: "A reason is required to reject a meetup."
+        alert = "A reason is required to reject a meetup."
+        respond_to do |format|
+          format.html { redirect_to stafftools_meetups_path, alert: alert }
+          format.json { render json: { ok: false, alert: alert }, status: :unprocessable_entity }
+        end
         return
       end
 
       @meetup.reject!(by: current_user, reason: reason)
-      redirect_to stafftools_meetups_path, notice: "Rejected “#{@meetup.title}.”"
+      notice = "Rejected “#{@meetup.title}.”"
+      respond_to do |format|
+        format.html { redirect_to stafftools_meetups_path, notice: notice }
+        format.json { render json: { ok: true, notice: notice, counts: status_counts } }
+      end
     end
 
     private
+
+    def status_counts
+      STATUSES.index_with { |status| current_event.meetups.where(status: status).count }
+    end
 
     def set_meetup
       @meetup = current_event.meetups.find(params[:id])
