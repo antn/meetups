@@ -4,7 +4,8 @@
 <% starts_at = @meetup.starts_at.in_time_zone(tz) %>
 <% ends_at = @meetup.ends_at.in_time_zone(tz) %>
 
-<%= link_to root_path, class: "inline-flex items-center gap-1 text-sm font-medium text-gray-500 no-underline transition hover:text-brand-purple" do %>
+<%# day: reopens the schedule on this meetup's day rather than the default tab. %>
+<%= link_to root_path(day: @meetup.scheduling_day.date.iso8601), class: "inline-flex items-center gap-1 text-sm font-medium text-gray-500 no-underline transition hover:text-brand-purple" do %>
   <%= heroicon "arrow-left", variant: "mini", class: "h-4 w-4" %>
   Back to schedule
 <% end %>

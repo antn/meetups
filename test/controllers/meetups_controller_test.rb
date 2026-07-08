@@ -49,15 +49,16 @@ class MeetupsControllerTest < ActionDispatch::IntegrationTest
 
   test "the day param selects that day's tab and filter links carry it" do
     expo = events(:expo)
-    expo.scheduling_days.create!(date: scheduling_days(:friday).date + 1, start_time: "10:00", end_time: "17:00")
+    saturday = scheduling_days(:friday).date + 1
+    expo.scheduling_days.create!(date: saturday, start_time: "10:00", end_time: "17:00")
 
-    get root_path(day: 1)
+    get root_path(day: saturday.iso8601)
     assert_response :success
     # The second day's tab is the selected one.
     selected = response.body[/aria-selected="true".*?<\/button>/m]
-    assert_includes selected, (scheduling_days(:friday).date + 1).strftime("%b %-d")
+    assert_includes selected, saturday.strftime("%b %-d")
     # Filter chips preserve the day so a filter reload stays put.
-    assert_match "day=1", response.body
+    assert_match "day=#{saturday.iso8601}", response.body
   end
 
   test "the schedule badges meetups you host" do

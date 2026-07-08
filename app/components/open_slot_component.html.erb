@@ -1,5 +1,6 @@
 <% if signed_in %>
-  <%= link_to helpers.new_meetup_path(slot: slot_param), class: STYLE do %>
+  <%# day_link: day-tabs keeps ?day current so "Back to schedule" returns here. %>
+  <%= link_to helpers.new_meetup_path(slot: slot_param), data: { day_link: true }, class: STYLE do %>
     <%= heroicon "plus", variant: "mini", class: "h-4 w-4" %>
     <%= label %>
   <% end %>

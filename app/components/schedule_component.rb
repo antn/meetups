@@ -30,13 +30,13 @@ class ScheduleComponent < ApplicationComponent
     @days ||= event.scheduling_days.order(:date).to_a
   end
 
-  # Which day tab is open on load: an explicit `day` index (kept in the URL as
-  # the viewer switches days, so tag-filter reloads preserve it), else today if
-  # the event is running today, else the first day.
+  # Which day tab is open on load: an explicit `day` date (kept in the URL as
+  # the viewer switches days, so tag-filter reloads and back-links preserve
+  # it), else today if the event is running today, else the first day.
   def selected_index
-    if selected_day.to_s.match?(/\A\d+\z/)
-      index = selected_day.to_i
-      return index if index.between?(0, days.size - 1)
+    if selected_day.present?
+      index = days.index { |day| day.date.iso8601 == selected_day.to_s }
+      return index if index
     end
 
     today_index || 0

@@ -1,6 +1,7 @@
 <% content_for :title, "Request a meetup · OffKai Expo" %>
 
-<%= link_to root_path, class: "inline-flex items-center gap-1 text-sm font-medium text-gray-500 no-underline transition hover:text-brand-purple" do %>
+<%# day: reopens the schedule on the day the viewer came from (nil falls back to "/"). %>
+<%= link_to root_path(day: params[:day].presence), class: "inline-flex items-center gap-1 text-sm font-medium text-gray-500 no-underline transition hover:text-brand-purple" do %>
   <%= heroicon "arrow-left", variant: "mini", class: "h-4 w-4" %>
   Back to schedule
 <% end %>
