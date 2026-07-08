@@ -50,4 +50,43 @@
       <p class="mt-1 text-xs font-medium text-brand-purple">Manage &rarr;</p>
     <% end %>
   </div>
+
+  <div class="mt-8">
+    <h2 class="text-lg font-semibold text-gray-900">Most RSVP'd meetups</h2>
+    <p class="mt-1 text-sm text-gray-500">The top 10 meetups by attendee count.</p>
+
+    <% if @top_meetups.any? %>
+      <div class="mt-4 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+        <ol class="divide-y divide-gray-100">
+          <% @top_meetups.each_with_index do |meetup, index| %>
+            <li class="flex items-center gap-4 px-5 py-3.5">
+              <span class="w-6 shrink-0 text-center text-sm font-semibold <%= index < 3 ? "text-brand-purple" : "text-gray-400" %>"><%= index + 1 %></span>
+
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2">
+                  <%= link_to meetup.title, stafftools_meetup_path(meetup), class: "truncate text-sm font-semibold text-gray-900 no-underline hover:text-brand-purple hover:underline" %>
+                  <span class="inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-xs font-semibold ring-1 <%= meetup_status_badge_classes(meetup.status) %>"><%= meetup.status.titleize %></span>
+                </div>
+                <p class="mt-0.5 truncate text-xs text-gray-500">
+                  <%= meetup.user.login %>
+                  &middot; <%= meetup.location.name %>
+                  &middot; <%= meetup.starts_at.in_time_zone(current_event.tz).strftime("%a %b %-d, %-l:%M %p") %>
+                </p>
+              </div>
+
+              <span class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-gray-50 px-2.5 py-1 text-sm font-semibold text-gray-700 ring-1 ring-gray-200">
+                <%= heroicon "users", variant: "mini", class: "h-4 w-4 text-brand-pink" %>
+                <%= meetup.rsvp_count %>
+              </span>
+            </li>
+          <% end %>
+        </ol>
+      </div>
+    <% else %>
+      <div class="mt-4 rounded-2xl border border-dashed border-gray-300 bg-white p-10 text-center">
+        <%= heroicon "users", class: "mx-auto h-10 w-10 text-gray-300" %>
+        <p class="mt-2 text-sm text-gray-500">No RSVPs yet.</p>
+      </div>
+    <% end %>
+  </div>
 <% end %>

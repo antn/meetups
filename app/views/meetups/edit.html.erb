@@ -1,4 +1,5 @@
 <% content_for :title, "Edit #{@meetup.title} · OffKai Expo" %>
+<% content_for :stafftools_url, stafftools_meetup_path(@meetup) %>
 
 <%= link_to meetup_path(@meetup.public_id), class: "inline-flex items-center gap-1 text-sm font-medium text-gray-500 no-underline transition hover:text-brand-purple" do %>
   <%= heroicon "arrow-left", variant: "mini", class: "h-4 w-4" %>

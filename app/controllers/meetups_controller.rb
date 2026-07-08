@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
 class MeetupsController < ApplicationController
-  before_action :require_authentication, only: %i[new create edit update]
+  before_action :require_authentication, only: %i[new create edit update cancel]
   before_action :require_current_event, only: %i[new create]
   before_action :require_accepting_meetups, only: %i[new create]
   before_action :set_editable_meetup, only: %i[edit update]
+  before_action :set_cancellable_meetup, only: :cancel
 
   # The public schedule for the active event (the site's home page).
   def index
@@ -65,6 +66,12 @@ class MeetupsController < ApplicationController
     render :edit, status: :unprocessable_entity
   end
 
+  # Frees the slot and notifies the host and attendees (see Meetup#cancel!).
+  def cancel
+    @meetup.cancel!
+    redirect_to root_path, notice: "“#{@meetup.title}” was cancelled."
+  end
+
   private
 
   def require_current_event
@@ -88,6 +95,14 @@ class MeetupsController < ApplicationController
     end
 
     @event = @meetup.event
+  end
+
+  # Cancellation follows the same permission as editing: the submitter or an
+  # admin, while the meetup is still live (pending or approved).
+  def set_cancellable_meetup
+    @meetup = Meetup.find_by(public_id: params[:id])
+
+    redirect_to root_path, alert: "You can't cancel that meetup." unless @meetup&.editable_by?(current_user)
   end
 
   def meetup_params

@@ -25,7 +25,7 @@
   </head>
 
   <body class="flex min-h-screen flex-col bg-white text-gray-900 antialiased">
-    <%= render StaffbarComponent.new(current_user: current_user) %>
+    <%= render StaffbarComponent.new(current_user: current_user, stafftools_url: content_for(:stafftools_url)) %>
     <%= render HeaderComponent.new(current_user: current_user) %>
 
     <% if notice.present? || alert.present? %>

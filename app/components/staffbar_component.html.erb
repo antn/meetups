@@ -24,7 +24,7 @@
       </div>
     </div>
     <div class="flex items-center justify-end">
-      <%= link_to helpers.stafftools_root_path, class: "flex items-center gap-1 rounded bg-black/40 py-1 px-2 font-semibold text-white no-underline opacity-75 transition hover:opacity-100" do %>
+      <%= link_to stafftools_link, class: "flex items-center gap-1 rounded bg-black/40 py-1 px-2 font-semibold text-white no-underline opacity-75 transition hover:opacity-100", data: { hotkey: "Shift+A" } do %>
         <%= heroicon "rocket-launch", variant: "mini", class: "h-3.5 w-3.5" %>
         Stafftools
       <% end %>

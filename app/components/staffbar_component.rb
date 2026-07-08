@@ -1,13 +1,20 @@
 # frozen_string_literal: true
 
 class StaffbarComponent < ApplicationComponent
-  def initialize(current_user:)
+  # stafftools_url: optional page-specific stafftools destination (set via
+  # `content_for :stafftools_url` in views); falls back to the stafftools root.
+  def initialize(current_user:, stafftools_url: nil)
     @current_user = current_user
+    @stafftools_url = stafftools_url
   end
 
   private
 
   attr_reader :current_user
+
+  def stafftools_link
+    @stafftools_url.presence || helpers.stafftools_root_path
+  end
 
   def render?
     current_user&.site_admin?

@@ -13,6 +13,9 @@ Rails.application.routes.draw do
 
   get "/my-schedule", to: "schedules#show", as: :my_schedule
   resources :meetups, only: %i[new create show edit update] do
+    member do
+      patch :cancel
+    end
     resource :attendance, only: %i[create destroy]
   end
 

@@ -96,6 +96,18 @@ class MeetupsControllerTest < ActionDispatch::IntegrationTest
     assert_match "Create a meetup", response.body
   end
 
+  test "the create button opens the sign-in modal for signed-out visitors" do
+    get root_path
+    assert_select "sign-in-trigger button", text: /Create a meetup/
+    assert_select "a[href='#{new_meetup_path}']", count: 0
+  end
+
+  test "the create button links to the form for signed-in users" do
+    sign_in users(:member)
+    get root_path
+    assert_select "a[href='#{new_meetup_path}']", text: /Create a meetup/
+  end
+
   test "hides the create button when the event has no bookable location" do
     locations(:main_stage).update!(active: false) # only an inactive location remains
     get root_path
@@ -318,6 +330,55 @@ class MeetupsControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:admin)
     get edit_meetup_path(meetups(:pending_vtuber).public_id)
     assert_response :success
+  end
+
+  # --- cancel ---
+
+  test "the show page offers the host a cancel button with a confirmation" do
+    sign_in users(:member)
+    get meetup_path(meetups(:approved_cosplay).public_id)
+    assert_select "form[action='#{cancel_meetup_path(meetups(:approved_cosplay).public_id)}'][data-turbo-confirm]"
+  end
+
+  test "the show page hides the cancel button from non-hosts" do
+    sign_in users(:guest)
+    get meetup_path(meetups(:approved_cosplay).public_id)
+    assert_select "form[action='#{cancel_meetup_path(meetups(:approved_cosplay).public_id)}']", count: 0
+  end
+
+  test "the submitter cancels their meetup" do
+    sign_in users(:member)
+    patch cancel_meetup_path(meetups(:approved_cosplay).public_id)
+    assert_redirected_to root_path
+    assert meetups(:approved_cosplay).reload.cancelled?
+  end
+
+  test "cancelling requires sign in" do
+    patch cancel_meetup_path(meetups(:approved_cosplay).public_id)
+    assert_redirected_to root_path
+    assert_not meetups(:approved_cosplay).reload.cancelled?
+  end
+
+  test "a non-owner, non-admin cannot cancel someone else's meetup" do
+    sign_in users(:guest)
+    patch cancel_meetup_path(meetups(:approved_cosplay).public_id)
+    assert_redirected_to root_path
+    assert_not meetups(:approved_cosplay).reload.cancelled?
+  end
+
+  test "admins can cancel another user's meetup" do
+    sign_in users(:admin)
+    patch cancel_meetup_path(meetups(:approved_cosplay).public_id)
+    assert_redirected_to root_path
+    assert meetups(:approved_cosplay).reload.cancelled?
+  end
+
+  test "an already-cancelled meetup can't be cancelled again" do
+    meetups(:approved_cosplay).update!(status: :cancelled)
+    sign_in users(:member)
+    patch cancel_meetup_path(meetups(:approved_cosplay).public_id)
+    assert_redirected_to root_path
+    assert_equal "You can't cancel that meetup.", flash[:alert]
   end
 
   private
