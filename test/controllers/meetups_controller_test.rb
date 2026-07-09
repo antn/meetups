@@ -123,6 +123,14 @@ class MeetupsControllerTest < ActionDispatch::IntegrationTest
     assert_match "Cosplay Contest", response.body
   end
 
+  test "the show page's social card tags carry the day, time, and location" do
+    get meetup_path(meetups(:approved_cosplay).public_id)
+    expected = meetups(:approved_cosplay).social_description
+    assert_select "meta[property='og:description'][content=?]", expected
+    assert_select "meta[name='twitter:description'][content=?]", expected
+    assert_select "meta[name='description'][content=?]", expected
+  end
+
   test "an approved meetup shows the RSVP button to a signed-in non-host" do
     sign_in users(:guest)
     get meetup_path(meetups(:approved_cosplay).public_id)

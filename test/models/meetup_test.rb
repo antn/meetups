@@ -35,6 +35,18 @@ class MeetupTest < ActiveSupport::TestCase
     assert build_meetup(description: "a" * 280).valid?
   end
 
+  test "social_description folds day, time, and location into the description" do
+    meetup = meetups(:approved_cosplay) # 11 AM PDT on 2026-09-12
+    assert_equal "📅 Saturday, Sep 12 · 11 AM - 12 PM · 📍 Main Stage — Show off your best cosplay.",
+      meetup.social_description
+  end
+
+  test "social_description falls back to the plain description without a start time" do
+    meetup = meetups(:approved_cosplay)
+    meetup.starts_at = nil
+    assert_equal meetup.description, meetup.social_description
+  end
+
   test "tagged_with returns meetups carrying any of the given tags" do
     cosplay = Meetup.tagged_with([ tags(:cosplay).public_id ])
     assert_includes cosplay, meetups(:approved_cosplay)

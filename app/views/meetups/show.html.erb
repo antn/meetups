@@ -1,5 +1,5 @@
 <% content_for :title, "#{@meetup.title} · OffKai Expo" %>
-<% content_for :meta_description, @meetup.description %>
+<% content_for :meta_description, @meetup.social_description %>
 <% content_for :stafftools_url, stafftools_meetup_path(@meetup) %>
 <% tz = @meetup.event.tz %>
 <% starts_at = @meetup.starts_at.in_time_zone(tz) %>

@@ -96,6 +96,14 @@ class Meetup < ApplicationRecord
     "#{starts_at.in_time_zone(event.tz).strftime("%-l %p")} - #{ends_at.in_time_zone(event.tz).strftime("%-l %p")}"
   end
 
+  # One-line summary for social cards (og:description / twitter:description),
+  # e.g. "📅 Friday, May 2 · 1 PM - 2 PM · 📍 Artist Alley — Come sing with us!"
+  def social_description
+    return description if starts_at.blank?
+
+    "📅 #{starts_at.in_time_zone(event.tz).strftime("%A, %b %-d")} · #{formatted_duration} · 📍 #{location.name} — #{description}"
+  end
+
   # Whether a viewer may see this meetup's details (beyond its location/timeslot
   # hold). Approved meetups are public; pending meetups are visible only to the
   # submitter and admins; rejected meetups are visible to no one.

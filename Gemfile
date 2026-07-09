@@ -67,6 +67,10 @@ gem "resend"
 # Pagination for stafftools lists [https://github.com/kaminari/kaminari]
 gem "kaminari"
 
+# Error tracking and performance monitoring [https://sentry.io]
+gem "sentry-ruby"
+gem "sentry-rails"
+
 group :development, :test do
   # Loads environment variables from .env files [https://github.com/bkeepers/dotenv]
   gem "dotenv-rails"
