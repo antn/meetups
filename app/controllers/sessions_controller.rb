@@ -18,6 +18,9 @@ class SessionsController < ApplicationController
       login_user(user)
       redirect_to root_path, notice: "Signed in as #{user.login}."
     end
+  rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid => e
+    Sentry.capture_exception(e)
+    redirect_to root_path, alert: "Sign in failed. Please try again."
   end
 
   def destroy
