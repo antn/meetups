@@ -130,6 +130,73 @@ class MeetupTest < ActiveSupport::TestCase
     end
   end
 
+  # --- merge_into! ---
+
+  test "merge_into! moves RSVPs to the target and cancels the source" do
+    source = meetups(:approved_karaoke) # host: member, attendee: guest
+    target = meetups(:approved_cosplay) # host: member, attendee: admin
+
+    source.merge_into!(target)
+
+    source.reload
+    assert_predicate source, :cancelled?
+    assert_equal target.id, source.merged_into_id
+    assert_empty source.attendances
+    assert_equal [ users(:admin), users(:guest) ].map(&:id).sort, target.attendances.pluck(:user_id).sort
+  end
+
+  test "merge_into! drops RSVPs that already exist on the target" do
+    source = meetups(:approved_karaoke)
+    target = meetups(:approved_cosplay)
+    source.attendances.create!(user: users(:admin)) # admin already attends the target
+
+    assert_difference -> { Attendance.count }, -1 do
+      source.merge_into!(target)
+    end
+    assert_equal 1, target.attendances.where(user: users(:admin)).count
+  end
+
+  test "merge_into! emails the merged notice instead of the cancellation one" do
+    source = meetups(:approved_karaoke) # recipients: guest (attendee) + member (host)
+    target = meetups(:approved_cosplay)
+
+    assert_enqueued_emails 2 do
+      assert_enqueued_email_with MeetupsMailer, :meetup_merged,
+        args: [ { source: source, target: target, user: users(:guest) } ] do
+        assert_enqueued_email_with MeetupsMailer, :meetup_merged,
+          args: [ { source: source, target: target, user: users(:member) } ] do
+          source.merge_into!(target)
+        end
+      end
+    end
+  end
+
+  test "a plain cancel still sends the cancellation email" do
+    meetup = meetups(:approved_karaoke) # host: member, attendee: guest
+
+    assert_enqueued_email_with MeetupsMailer, :meetup_cancelled,
+      args: [ { meetup: meetup, user: users(:guest) } ] do
+      meetup.cancel!
+    end
+  end
+
+  test "merge_into! rejects invalid targets and sources" do
+    source = meetups(:approved_karaoke)
+    target = meetups(:approved_cosplay)
+
+    assert_raises(Meetup::MergeError) { source.merge_into!(nil) }
+    assert_raises(Meetup::MergeError) { source.merge_into!(source) }
+    assert_raises(Meetup::MergeError) { source.merge_into!(meetups(:pending_vtuber)) }
+
+    other_event = Event.create!(name: "Other Con", time_zone: events(:expo).time_zone)
+    foreign = target.dup
+    foreign.assign_attributes(event: other_event, public_id: nil)
+    assert_raises(Meetup::MergeError) { source.merge_into!(foreign) }
+
+    source.merge_into!(target)
+    assert_raises(Meetup::MergeError) { source.merge_into!(target) } # already merged + cancelled
+  end
+
   test "rescheduling an approved meetup re-arms an already-sent reminder" do
     meetup = meetups(:approved_cosplay)
     meetup.update_column(:reminder_sent_at, Time.current)

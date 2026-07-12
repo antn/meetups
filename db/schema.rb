@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_01_170000) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_12_080000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -95,6 +95,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_170000) do
     t.text "description"
     t.bigint "event_id", null: false
     t.bigint "location_id", null: false
+    t.bigint "merged_into_id"
     t.string "public_id", limit: 12, null: false
     t.text "rejection_reason"
     t.datetime "reminder_sent_at"
@@ -109,6 +110,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_170000) do
     t.index ["event_id"], name: "index_meetups_on_event_id"
     t.index ["location_id", "starts_at"], name: "index_meetups_unique_active_slot", unique: true, where: "(status <> ALL (ARRAY[2, 3]))"
     t.index ["location_id"], name: "index_meetups_on_location_id"
+    t.index ["merged_into_id"], name: "index_meetups_on_merged_into_id"
     t.index ["public_id"], name: "index_meetups_on_public_id", unique: true
     t.index ["reviewed_by_id"], name: "index_meetups_on_reviewed_by_id"
     t.index ["scheduling_day_id"], name: "index_meetups_on_scheduling_day_id"
@@ -329,6 +331,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_170000) do
   add_foreign_key "meetup_tags", "tags"
   add_foreign_key "meetups", "events"
   add_foreign_key "meetups", "locations"
+  add_foreign_key "meetups", "meetups", column: "merged_into_id"
   add_foreign_key "meetups", "scheduling_days"
   add_foreign_key "meetups", "users"
   add_foreign_key "meetups", "users", column: "reviewed_by_id"

@@ -9,3 +9,8 @@ approved_cosplay_cosplay:
   meetup: approved_cosplay
   tag: cosplay
   public_id: mtagappr0001
+
+approved_karaoke_gaming:
+  meetup: approved_karaoke
+  tag: gaming
+  public_id: mtagappr0002

@@ -21,6 +21,12 @@ class MeetupsController < ApplicationController
   def show
     @meetup = Meetup.includes(:attendances).find_by(public_id: params[:id])
 
+    # A merged meetup forwards visitors to its replacement.
+    if @meetup&.merged_into && @meetup.merged_into.visible_to?(current_user)
+      return redirect_to meetup_path(@meetup.merged_into.public_id),
+        notice: "“#{@meetup.title}” was merged into this meetup."
+    end
+
     # Approved meetups are public; pending ones are visible only to their
     # submitter (and admins). Everything else — others' holds, rejected,
     # cancelled, missing — sends the viewer back to the schedule. Mirrors

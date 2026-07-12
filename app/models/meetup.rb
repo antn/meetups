@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 class Meetup < ApplicationRecord
+  # Raised when a merge's preconditions aren't met (see #merge_into!).
+  class MergeError < StandardError; end
+
   # Fixed meetup length. A meetup runs starts_at .. starts_at + DURATION.
   DURATION = 1.hour
 
@@ -12,6 +15,7 @@ class Meetup < ApplicationRecord
   belongs_to :location
   belongs_to :scheduling_day
   belongs_to :reviewed_by, class_name: "User", optional: true
+  belongs_to :merged_into, class_name: "Meetup", optional: true
 
   has_many :meetup_tags, dependent: :destroy
   has_many :tags, through: :meetup_tags
@@ -142,6 +146,37 @@ class Meetup < ApplicationRecord
     update!(status: :cancelled)
   end
 
+  # Fold this meetup into `target`: move RSVPs over (skipping people already
+  # going to the target), cancel this meetup without the usual cancellation
+  # email, and instead tell everyone affected where their meetup went.
+  def merge_into!(target)
+    raise MergeError, "Choose a meetup to merge into." if target.nil?
+    raise MergeError, "A meetup can't be merged into itself." if target.id == id
+    raise MergeError, "Both meetups must belong to the same event." if target.event_id != event_id
+    raise MergeError, "The target meetup must be approved." unless target.approved?
+    raise MergeError, "This meetup was already merged." if merged_into_id.present?
+    raise MergeError, "Only pending or approved meetups can be merged." unless pending? || approved?
+
+    # Snapshot before moving RSVPs, or the source's attendee list is empty by
+    # send time.
+    recipients = reminder_recipients
+
+    transaction do
+      # Drop RSVPs that would collide with the target's unique (user, meetup)
+      # index, then move the rest wholesale.
+      attendances.where(user_id: target.attendances.select(:user_id)).destroy_all
+      attendances.update_all(meetup_id: target.id, updated_at: Time.current)
+
+      # Setting merged_into alongside the status suppresses the standard
+      # cancellation email (see send_status_change_notification).
+      update!(status: :cancelled, merged_into: target)
+    end
+
+    recipients.each do |recipient|
+      MeetupsMailer.meetup_merged(source: self, target: target, user: recipient).deliver_later
+    end
+  end
+
   # Undo a review decision, putting the meetup back in the pending queue and
   # clearing the review metadata so it reads as untouched.
   def revert_to_pending!
@@ -193,6 +228,9 @@ class Meetup < ApplicationRecord
     elsif rejected?
       MeetupsMailer.meetup_rejected(meetup: self).deliver_later
     elsif cancelled?
+      # A merge cancels the source but sends its own "merged" email instead.
+      return if merged_into_id.present?
+
       # Cancellation affects everyone who was going, not just the host.
       reminder_recipients.each do |recipient|
         MeetupsMailer.meetup_cancelled(meetup: self, user: recipient).deliver_later

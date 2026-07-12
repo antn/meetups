@@ -35,6 +35,27 @@ class MeetupsMailerTest < ActionMailer::TestCase
     assert_match "A meetup you RSVP'd to", attendee_mail.body.to_s
   end
 
+  test "meetup_merged tailors copy for the host and for attendees and links the target" do
+    source = meetups(:approved_karaoke)
+    target = meetups(:approved_cosplay)
+
+    host_mail = MeetupsMailer.meetup_merged(source: source, target: target, user: source.user)
+    assert_equal [ source.user.email ], host_mail.to
+    assert_match "merged", host_mail.subject
+    assert_match source.title, host_mail.subject
+    assert_match "Your fan meetup", host_mail.body.to_s
+    assert_match target.title, host_mail.body.to_s
+    assert_match target.location.name, host_mail.body.to_s
+    assert_match "/meetups/#{target.public_id}", host_mail.body.to_s
+    assert_match "events@offkaiexpo.com", host_mail.body.to_s
+
+    attendee = users(:guest)
+    attendee_mail = MeetupsMailer.meetup_merged(source: source, target: target, user: attendee)
+    assert_equal [ attendee.email ], attendee_mail.to
+    assert_match "A meetup you RSVP'd to", attendee_mail.body.to_s
+    assert_match "carried over automatically", attendee_mail.body.to_s
+  end
+
   test "meetup_reverted notifies the host it is back to pending" do
     meetup = meetups(:approved_cosplay)
 

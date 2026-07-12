@@ -12,6 +12,19 @@ pending_vtuber:
   status: 0
   public_id: meetuppend01
 
+# Approved, public meetup in the Friday 2:00 PM PDT slot (21:00 UTC).
+# NOTE: tests treat the 12 PM and 1 PM slots as free — don't move this earlier.
+approved_karaoke:
+  event: expo
+  user: member
+  location: main_stage
+  scheduling_day: friday
+  title: Karaoke Hour
+  description: Sing your favorite anime openings.
+  starts_at: 2026-09-12 21:00:00
+  status: 1
+  public_id: meetupappr02
+
 # Approved, public meetup in the Friday 11:00 AM PDT slot (18:00 UTC).
 approved_cosplay:
   event: expo

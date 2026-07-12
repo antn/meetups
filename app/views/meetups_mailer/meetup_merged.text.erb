@@ -1,0 +1,22 @@
+Hi <%= @user.login %>,
+
+<% if @is_host %>Your fan meetup at OffKai Expo has been merged into another meetup.<% else %>A meetup you RSVP'd to at OffKai Expo has been merged into another meetup.<% end %>
+
+Original meetup: <%= @source.title %>
+
+It has been combined with:
+
+Name: <%= @target.title %>
+Meetup area: <%= @target.location.name %>
+Date: <%= @target.formatted_start_date %>
+Time: <%= @target.formatted_duration %>
+
+<% if @is_host %>Your original meetup is no longer on the schedule and its time slot has been freed up.<% else %>Your RSVP has been carried over automatically — there's nothing you need to do.<% end %>
+
+You can view the combined meetup at <%= meetup_url(@target.public_id) %>.
+
+If you have any questions, please feel free to reach out to us at events@offkaiexpo.com.
+
+Thanks,
+
+The OffKai Expo Team

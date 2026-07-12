@@ -16,6 +16,13 @@
     <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 <%= meetup_status_badge_classes(@meetup.status) %>">
       <%= @meetup.status.titleize %>
     </span>
+    <% if @meetup.merged_into %>
+      <span class="ml-1 inline-flex items-center gap-1 text-xs font-medium text-gray-500">
+        Merged into
+        <%= link_to @meetup.merged_into.title, stafftools_meetup_path(@meetup.merged_into),
+              class: "font-semibold text-brand-purple no-underline hover:underline" %>
+      </span>
+    <% end %>
     <h1 class="mt-2 text-2xl font-bold tracking-tight text-gray-900"><%= @meetup.title %></h1>
     <p class="mt-1 flex flex-wrap items-center gap-2 text-gray-500">
       <span>Hosted by</span>
@@ -103,6 +110,24 @@
                 placeholder: "Reason for rejection",
                 class: "block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-red-400 focus:ring-red-400" %>
           <%= submit_tag "Reject", class: "shrink-0 cursor-pointer rounded-full border border-red-200 bg-white px-5 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50" %>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if (@meetup.pending? || @meetup.approved?) && @merge_candidates.any? %>
+      <div class="border-t border-gray-100 pt-6">
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-400">Merge into another meetup</h2>
+        <p class="mt-1 text-sm text-gray-500">Moves everyone's RSVPs to the meetup you pick, cancels this one, and emails attendees about the change.</p>
+        <%= form_with url: merge_stafftools_meetup_path(@meetup), method: :patch,
+              data: { turbo_confirm: "Merge “#{@meetup.title}”? Its RSVPs move to the selected meetup and this one is cancelled. Attendees will be emailed." },
+              class: "mt-3 flex items-center gap-2" do %>
+          <%= select_tag :target_id,
+                options_for_select(@merge_candidates.map { |m|
+                  [ "#{m.title} — #{m.scheduling_day.date.strftime("%a")} #{m.starts_at.in_time_zone(current_event.tz).strftime("%-l %p")} · #{m.location.name}", m.id ]
+                }),
+                include_blank: "Choose a meetup…",
+                class: "block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-brand-purple focus:ring-brand-purple" %>
+          <%= submit_tag "Merge", class: "shrink-0 cursor-pointer rounded-full border border-gray-300 bg-white px-5 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50" %>
         <% end %>
       </div>
     <% end %>

@@ -5,3 +5,9 @@ admin_going_cosplay:
   user: admin
   meetup: approved_cosplay
   public_id: attnadmin001
+
+# Guest is going to the approved Karaoke Hour.
+guest_going_karaoke:
+  user: guest
+  meetup: approved_karaoke
+  public_id: attnguest001

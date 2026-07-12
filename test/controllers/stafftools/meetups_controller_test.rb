@@ -127,6 +127,52 @@ module Stafftools
       assert_predicate meetup.reload, :cancelled?
     end
 
+    test "merge moves RSVPs to the target and cancels the source" do
+      source = meetups(:approved_karaoke) # attendee: guest
+      target = meetups(:approved_cosplay) # attendee: admin
+
+      patch merge_stafftools_meetup_path(source), params: { target_id: target.id }
+
+      assert_redirected_to stafftools_meetup_path(target)
+      source.reload
+      assert_predicate source, :cancelled?
+      assert_equal target.id, source.merged_into_id
+      assert_equal [ users(:admin), users(:guest) ].map(&:id).sort, target.attendances.pluck(:user_id).sort
+    end
+
+    test "merge without a target redirects back with an alert" do
+      source = meetups(:approved_karaoke)
+
+      patch merge_stafftools_meetup_path(source)
+
+      assert_redirected_to stafftools_meetup_path(source)
+      assert_equal "Choose a meetup to merge into.", flash[:alert]
+      assert_predicate source.reload, :approved?
+      assert_equal 1, source.attendances.count
+    end
+
+    test "merge responds with JSON" do
+      source = meetups(:approved_karaoke)
+      target = meetups(:approved_cosplay)
+
+      patch merge_stafftools_meetup_path(source), params: { target_id: target.id }, as: :json
+      assert_response :success
+      body = response.parsed_body
+      assert body["ok"]
+      assert_includes body["notice"], source.title
+
+      patch merge_stafftools_meetup_path(target), params: { target_id: source.id }, as: :json
+      assert_response :unprocessable_entity
+      assert_not response.parsed_body["ok"]
+    end
+
+    test "show offers a merge target picker for a live meetup" do
+      get stafftools_meetup_path(meetups(:approved_karaoke))
+      assert_response :success
+      assert_match "Merge into another meetup", response.body
+      assert_select "select[name='target_id'] option", text: /Cosplay Contest/
+    end
+
     test "unapprove emails the host that the meetup is back to pending" do
       meetup = meetups(:approved_cosplay)
       assert_enqueued_email_with MeetupsMailer, :meetup_reverted, args: [ { meetup: meetup } ] do

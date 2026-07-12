@@ -47,6 +47,7 @@ Rails.application.routes.draw do
         patch :reject
         patch :cancel
         patch :unapprove
+        patch :merge
       end
     end
   end

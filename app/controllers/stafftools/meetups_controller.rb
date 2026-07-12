@@ -3,7 +3,7 @@
 module Stafftools
   class MeetupsController < ApplicationController
     before_action :require_current_event
-    before_action :set_meetup, only: %i[show approve reject cancel unapprove edit update]
+    before_action :set_meetup, only: %i[show approve reject cancel unapprove merge edit update]
     before_action :require_editable, only: %i[edit update]
 
     STATUSES = Meetup.statuses.keys.freeze
@@ -17,7 +17,10 @@ module Stafftools
         .order(:starts_at)
     end
 
-    def show; end
+    def show
+      @merge_candidates = current_event.meetups.approved.where.not(id: @meetup.id)
+        .includes(:location, :scheduling_day).order(:starts_at)
+    end
 
     def edit
       @selected_slot = current_slot(@meetup)
@@ -79,6 +82,21 @@ module Stafftools
       respond_to do |format|
         format.html { redirect_to stafftools_meetups_path, notice: notice }
         format.json { render json: { ok: true, notice: notice, counts: status_counts } }
+      end
+    end
+
+    def merge
+      target = current_event.meetups.find_by(id: params[:target_id])
+      @meetup.merge_into!(target)
+      notice = "Merged “#{@meetup.title}” into “#{target.title}.”"
+      respond_to do |format|
+        format.html { redirect_to stafftools_meetup_path(target), notice: notice }
+        format.json { render json: { ok: true, notice: notice, counts: status_counts } }
+      end
+    rescue Meetup::MergeError => e
+      respond_to do |format|
+        format.html { redirect_to stafftools_meetup_path(@meetup), alert: e.message }
+        format.json { render json: { ok: false, alert: e.message }, status: :unprocessable_entity }
       end
     end
 

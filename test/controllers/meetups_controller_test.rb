@@ -175,6 +175,25 @@ class MeetupsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path
   end
 
+  test "a merged meetup's URL redirects to its replacement" do
+    source = meetups(:approved_karaoke)
+    target = meetups(:approved_cosplay)
+    source.merge_into!(target)
+
+    get meetup_path(source.public_id)
+    assert_redirected_to meetup_path(target.public_id)
+  end
+
+  test "a merged meetup's URL falls back to the schedule when the target is gone" do
+    source = meetups(:approved_karaoke)
+    target = meetups(:approved_cosplay)
+    source.merge_into!(target)
+    target.cancel!
+
+    get meetup_path(source.public_id)
+    assert_redirected_to root_path
+  end
+
   # --- new / create: requesting a meetup ---
 
   test "new requires sign in" do

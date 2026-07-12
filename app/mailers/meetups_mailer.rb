@@ -43,6 +43,20 @@ class MeetupsMailer < ApplicationMailer
     )
   end
 
+  # Sent to the source host and each RSVP'd attendee when a moderator merges
+  # one meetup into another.
+  def meetup_merged(source:, target:, user:)
+    @source = source
+    @target = target
+    @user = user
+    @is_host = user.id == source.user_id
+
+    mail(
+      to: @user.email,
+      subject: "OffKai Expo meetup merged: #{@source.title}",
+    )
+  end
+
   # Sent to the host when a moderator moves an approved meetup back to pending.
   def meetup_reverted(meetup:)
     @meetup = meetup
