@@ -3,6 +3,7 @@
 class SchedulingDay < ApplicationRecord
   belongs_to :event
   has_many :meetups, dependent: :restrict_with_error
+  has_many :location_blocked_hours, dependent: :destroy
 
   validates :date, presence: true, uniqueness: { scope: :event_id }
   validates :start_time, :end_time, presence: true

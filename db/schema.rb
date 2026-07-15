@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_12_080000) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_14_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -63,6 +63,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_12_080000) do
     t.datetime "updated_at", null: false
     t.index ["active"], name: "index_events_on_single_active", unique: true, where: "active"
     t.index ["public_id"], name: "index_events_on_public_id", unique: true
+  end
+
+  create_table "location_blocked_hours", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "hour", null: false
+    t.bigint "location_id", null: false
+    t.string "public_id", limit: 12, null: false
+    t.bigint "scheduling_day_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["location_id", "scheduling_day_id", "hour"], name: "index_location_blocked_hours_unique_slot", unique: true
+    t.index ["location_id"], name: "index_location_blocked_hours_on_location_id"
+    t.index ["public_id"], name: "index_location_blocked_hours_on_public_id", unique: true
+    t.index ["scheduling_day_id"], name: "index_location_blocked_hours_on_scheduling_day_id"
   end
 
   create_table "locations", force: :cascade do |t|
@@ -326,6 +339,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_12_080000) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "attendances", "meetups"
   add_foreign_key "attendances", "users"
+  add_foreign_key "location_blocked_hours", "locations"
+  add_foreign_key "location_blocked_hours", "scheduling_days"
   add_foreign_key "locations", "events"
   add_foreign_key "meetup_tags", "meetups"
   add_foreign_key "meetup_tags", "tags"

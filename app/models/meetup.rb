@@ -48,6 +48,7 @@ class Meetup < ApplicationRecord
   validate :location_is_active, on: :create
   validate :requires_a_tag
   validate :slot_available
+  validate :slot_not_blocked
 
   # Rejected/cancelled meetups are never shown in listings; they also free the slot.
   scope :visible, -> { where.not(status: INACTIVE_STATUSES) }
@@ -286,5 +287,17 @@ class Meetup < ApplicationRecord
     conflict = conflict.where.not(id: id) if persisted?
 
     errors.add(:base, "That location is already booked for this time") if conflict.exists?
+  end
+
+  # Blocked hours only prevent taking a slot, not keeping one: a meetup booked
+  # before the block was added must still be approvable/cancellable, so this
+  # only runs when the slot itself is being chosen or moved.
+  def slot_not_blocked
+    return if location.blank? || scheduling_day.blank? || starts_at.blank?
+    return unless new_record? || will_save_change_to_starts_at? || will_save_change_to_location_id?
+
+    if location.blocked_at?(scheduling_day, starts_at)
+      errors.add(:base, "That location is not available at this time")
+    end
   end
 end

@@ -47,7 +47,11 @@ class ScheduleComponent < ApplicationComponent
   # rows renders a blank slate instead — see ScheduleDayComponent).
   def slots_for(day)
     slots = day.valid_start_times.map do |start_time|
-      { start_time: start_time, meetups: meetups_for(day, start_time) }
+      {
+        start_time: start_time,
+        meetups: meetups_for(day, start_time),
+        blocked_location_ids: blocked_location_ids_for(day, start_time)
+      }
     end
     collapse_empty ? slots.select { |slot| slot[:meetups].any? } : slots
   end
@@ -67,6 +71,20 @@ class ScheduleComponent < ApplicationComponent
 
   def active_location_count
     @active_location_count ||= event.locations.active.count
+  end
+
+  def blocked_location_ids_for(day, start_time)
+    blocked_by_slot[[ day.id, start_time.hour ]] || []
+  end
+
+  # Active locations blocked per [day, hour], loaded once. Inactive locations
+  # are excluded because they're already missing from active_location_count.
+  def blocked_by_slot
+    @blocked_by_slot ||= LocationBlockedHour
+      .where(scheduling_day_id: days.map(&:id), location_id: event.locations.active.select(:id))
+      .pluck(:scheduling_day_id, :hour, :location_id)
+      .group_by { |day_id, hour, _location_id| [ day_id, hour ] }
+      .transform_values { |rows| rows.map(&:last) }
   end
 
   # The day to render the "current time" marker on: the one whose date is today

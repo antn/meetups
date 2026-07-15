@@ -3,18 +3,19 @@
 # A single hour within a day's timeline: the time label, any meetups booked into
 # that hour, and a "request slot" affordance for the locations still open.
 class TimeSlotComponent < ApplicationComponent
-  def initialize(scheduling_day:, start_time:, meetups:, active_location_count:, viewer: nil, show_open_slots: true)
+  def initialize(scheduling_day:, start_time:, meetups:, active_location_count:, blocked_location_ids: [], viewer: nil, show_open_slots: true)
     @scheduling_day = scheduling_day
     @start_time = start_time
     @meetups = meetups
     @active_location_count = active_location_count
+    @blocked_location_ids = blocked_location_ids || []
     @viewer = viewer
     @show_open_slots = show_open_slots
   end
 
   private
 
-  attr_reader :scheduling_day, :start_time, :meetups, :active_location_count, :viewer, :show_open_slots
+  attr_reader :scheduling_day, :start_time, :meetups, :active_location_count, :blocked_location_ids, :viewer, :show_open_slots
 
   def time_label
     start_time.strftime("%-l:%M %p")
@@ -32,8 +33,12 @@ class TimeSlotComponent < ApplicationComponent
     start_time.hour
   end
 
+  # Locations still bookable this hour. Unioning booked and blocked location
+  # ids avoids double-counting a location that was booked before its hour was
+  # blocked.
   def open_slots
-    [ active_location_count - meetups.size, 0 ].max
+    unavailable = (meetups.map(&:location_id) | blocked_location_ids).size
+    [ active_location_count - unavailable, 0 ].max
   end
 
   # A timeslot that has already started can't be claimed.

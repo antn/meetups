@@ -76,5 +76,37 @@ module Stafftools
       end
       assert_redirected_to stafftools_locations_path
     end
+
+    test "edit form renders the availability grid" do
+      get edit_stafftools_location_path(locations(:main_stage))
+      assert_response :success
+      assert_match "Hourly availability", response.body
+    end
+
+    test "update syncs blocked hours from the availability grid" do
+      location = locations(:main_stage)
+      day = scheduling_days(:friday)
+      all_keys = day.valid_start_times.map { |t| "#{day.id}:#{t.hour}" }
+
+      patch stafftools_location_path(location), params: {
+        location: { name: "Main Stage", active: "1", available_hour_keys: [ "" ] + all_keys - [ "#{day.id}:12", "#{day.id}:13" ] }
+      }
+      assert_redirected_to stafftools_locations_path
+      assert_equal [ 12, 13 ], location.blocked_hours.order(:hour).pluck(:hour)
+
+      # Re-submitting with every hour available clears the blocks.
+      patch stafftools_location_path(location), params: {
+        location: { name: "Main Stage", active: "1", available_hour_keys: [ "" ] + all_keys }
+      }
+      assert_empty location.blocked_hours.reload
+    end
+
+    test "update without the availability grid leaves blocked hours alone" do
+      location = locations(:main_stage)
+      LocationBlockedHour.create!(location: location, scheduling_day: scheduling_days(:friday), hour: 12)
+
+      patch stafftools_location_path(location), params: { location: { name: "Main Stage" } }
+      assert_equal [ 12 ], location.blocked_hours.pluck(:hour)
+    end
   end
 end

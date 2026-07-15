@@ -206,4 +206,30 @@ class MeetupTest < ActiveSupport::TestCase
 
     assert_nil meetup.reload.reminder_sent_at
   end
+
+  test "can't book a slot whose hour is blocked for the location" do
+    LocationBlockedHour.create!(location: locations(:main_stage), scheduling_day: scheduling_days(:friday), hour: 13)
+
+    meetup = build_meetup(description: "A perfectly nice meetup.") # 1 PM slot
+    assert_not meetup.valid?
+    assert_includes meetup.errors[:base], "That location is not available at this time"
+  end
+
+  test "a meetup booked before its hour was blocked can still be reviewed" do
+    meetup = meetups(:pending_vtuber) # 10 AM PDT
+    LocationBlockedHour.create!(location: meetup.location, scheduling_day: meetup.scheduling_day, hour: 10)
+
+    meetup.approve!(by: users(:admin))
+    assert meetup.reload.approved?
+  end
+
+  test "can't move a meetup into a blocked hour" do
+    meetup = meetups(:approved_cosplay) # 11 AM PDT
+    day = meetup.scheduling_day
+    LocationBlockedHour.create!(location: meetup.location, scheduling_day: day, hour: 12)
+
+    meetup.starts_at = day.valid_start_times.find { |t| t.hour == 12 }
+    assert_not meetup.valid?
+    assert_includes meetup.errors[:base], "That location is not available at this time"
+  end
 end
